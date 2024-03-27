@@ -1,11 +1,14 @@
 package com.deveclopers.myleague.controller;
 
+import com.deveclopers.myleague.document.League;
+import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.service.MyLeagueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,7 +25,7 @@ public class MyLeagueController {
   }
 
   @PostMapping("/league")
-  public ResponseEntity<String> postLeague() {
-    return new ResponseEntity<>(myLeagueService.createLeague(), HttpStatus.OK);
+  public ResponseEntity<League> postLeague(@RequestBody LeagueDto leagueDto) {
+    return new ResponseEntity<>(myLeagueService.createLeague(leagueDto), HttpStatus.OK);
   }
 }

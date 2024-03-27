@@ -13,6 +13,7 @@ public class League {
 
   @Id
   private String leagueId;
+  private String name;
   private String location;
   private String field;
   private String major;
