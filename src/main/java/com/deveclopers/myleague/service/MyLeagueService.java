@@ -4,6 +4,7 @@ import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.mapper.LeagueMapper;
 import com.deveclopers.myleague.repository.LeagueRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,5 +21,9 @@ public class MyLeagueService {
 
     leagueRepository.save(league);
     return league;
+  }
+
+  public List<League> getLeagues() {
+    return leagueRepository.findAll();
   }
 }
