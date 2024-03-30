@@ -1,9 +1,14 @@
 package com.deveclopers.myleague.service;
 
 import com.deveclopers.myleague.document.League;
+import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.LeagueDto;
+import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.mapper.LeagueMapper;
+import com.deveclopers.myleague.mapper.TeamMapper;
 import com.deveclopers.myleague.repository.LeagueRepository;
+import com.deveclopers.myleague.repository.TeamRepository;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -11,9 +16,11 @@ import org.springframework.stereotype.Service;
 public class MyLeagueService {
 
   private final LeagueRepository leagueRepository;
+  private final TeamRepository teamRepository;
 
-  public MyLeagueService(LeagueRepository leagueRepository) {
+  public MyLeagueService(LeagueRepository leagueRepository, TeamRepository teamRepository) {
     this.leagueRepository = leagueRepository;
+    this.teamRepository = teamRepository;
   }
 
   public League createLeague(LeagueDto leagueDto) {
@@ -30,5 +37,25 @@ public class MyLeagueService {
   public League getLeague(String id) {
     return leagueRepository.findById(id)
       .orElseThrow();
+  }
+
+  public List<Team> getTeams(String leagueId) {
+    return null;
+  }
+
+  public Team addTeamToLeague(TeamDto teamDto, String leagueId) {
+    League league = leagueRepository.findById(leagueId).orElseThrow();
+    Team newTeam = TeamMapper.INSTANCE.dtoToTeam(teamDto);
+    Team saved = teamRepository.save(newTeam);
+
+    if (league.getTeams() != null && !league.getTeams().isEmpty()) {
+      league.getTeams().add(saved);
+    } else {
+      league.setTeams(Collections.singletonList(saved));
+    }
+
+    leagueRepository.save(league);
+
+    return saved;
   }
 }

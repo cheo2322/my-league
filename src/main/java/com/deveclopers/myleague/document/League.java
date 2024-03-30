@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Document
 @Getter
@@ -17,6 +18,7 @@ public class League {
   private String location;
   private String field;
   private String major;
+  @DocumentReference
   private List<Team> teams;
   private String picture;
   private List<Phase> phases;
