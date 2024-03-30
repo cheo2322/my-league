@@ -26,4 +26,9 @@ public class MyLeagueService {
   public List<League> getLeagues() {
     return leagueRepository.findAll();
   }
+
+  public League getLeague(String id) {
+    return leagueRepository.findById(id)
+      .orElseThrow();
+  }
 }

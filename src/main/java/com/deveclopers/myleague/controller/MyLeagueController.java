@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,5 +35,10 @@ public class MyLeagueController {
   @GetMapping("/league")
   public ResponseEntity<List<League>> getLeague() {
     return ResponseEntity.ok(myLeagueService.getLeagues());
+  }
+
+  @GetMapping("/league/{id}")
+  public ResponseEntity<League> getLeague(@PathVariable String id) {
+    return ResponseEntity.ok(myLeagueService.getLeague(id));
   }
 }
