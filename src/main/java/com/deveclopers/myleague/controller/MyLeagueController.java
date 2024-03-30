@@ -45,6 +45,11 @@ public class MyLeagueController {
     return ResponseEntity.ok(myLeagueService.getLeague(id));
   }
 
+  @GetMapping("league/{id}/team")
+  public ResponseEntity<List<Team>> getTeams(@PathVariable String id) {
+    return ResponseEntity.ok(myLeagueService.getTeams(id));
+  }
+
   @PatchMapping("/league/{id}/team")
   public ResponseEntity<Team> addTeam(@PathVariable String id, @RequestBody TeamDto teamDto) {
     return ResponseEntity.ok(myLeagueService.addTeamToLeague(teamDto, id));

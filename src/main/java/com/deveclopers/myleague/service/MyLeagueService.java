@@ -40,7 +40,9 @@ public class MyLeagueService {
   }
 
   public List<Team> getTeams(String leagueId) {
-    return null;
+    League league = leagueRepository.findById(leagueId).orElseThrow();
+
+    return league.getTeams();
   }
 
   public Team addTeamToLeague(TeamDto teamDto, String leagueId) {
