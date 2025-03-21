@@ -11,19 +11,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Getter
 @Setter
 @ToString
-public class Result {
+public class Match {
 
   @Id
-  private String resultId;
+  private String matchId;
   private Team home;
   private Team visitant;
-  private Double homeResult;
-  private Double visitantResult;
+  private Integer homeResult;
+  private Integer visitantResult;
   private Boolean hasExtraTime;
-  private Double homeExtraTimeResult;
-  private Double visitantExtraTimeResult;
   private Boolean hasPenalties;
   private BinaryList homePenalties;
   private BinaryList visitantPenalties;
   private Team winner;
+  private Boolean hasFinished;
 }

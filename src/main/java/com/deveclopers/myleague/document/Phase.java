@@ -14,8 +14,9 @@ public class Phase {
 
   @Id
   private String phaseId;
+  private String name;
   private PhaseType phaseType;
-  private List<Result> results;
+  private List<Match> matches;
   private Map<Integer, Team> positions;
 
   enum PhaseType {

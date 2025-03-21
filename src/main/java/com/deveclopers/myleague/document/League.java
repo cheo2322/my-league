@@ -1,5 +1,6 @@
 package com.deveclopers.myleague.document;
 
+import com.deveclopers.myleague.service.Round;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,4 +24,7 @@ public class League {
   private String picture;
   private List<Phase> phases;
   private List<Statistic> statistics;
+  private Positions positions;
+  @DocumentReference
+  private List<Round> rounds;
 }
