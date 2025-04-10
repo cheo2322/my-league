@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/my_league/v1")
+@RequestMapping("/my_league/v1/leagues")
 @Slf4j
 @CrossOrigin(origins = {"*"})
 public class MyLeagueController {
@@ -33,28 +33,28 @@ public class MyLeagueController {
     this.myLeagueService = myLeagueService;
   }
 
-  @PostMapping("/league")
+  @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<DefaultDto> postLeague(@RequestBody LeagueDto leagueDto) {
     return myLeagueService.createLeague(leagueDto);
   }
 
-  @GetMapping("/league")
+  @GetMapping
   public ResponseEntity<List<League>> getLeague() {
     return ResponseEntity.ok(myLeagueService.getLeagues());
   }
 
-  @GetMapping("/league/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<League> getLeague(@PathVariable String id) {
     return ResponseEntity.ok(myLeagueService.getLeague(id));
   }
 
-  @GetMapping("league/{id}/team")
+  @GetMapping("/{id}/team")
   public ResponseEntity<List<Team>> getTeams(@PathVariable String id) {
     return ResponseEntity.ok(myLeagueService.getTeams(id));
   }
 
-  @PatchMapping("/league/{id}/team")
+  @PatchMapping("/{id}/team")
   public ResponseEntity<Team> addTeam(@PathVariable String id, @RequestBody TeamDto teamDto) {
     return ResponseEntity.ok(myLeagueService.addTeamToLeague(teamDto, id));
   }
