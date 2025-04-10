@@ -2,6 +2,7 @@ package com.deveclopers.myleague.controller;
 
 import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.document.Team;
+import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.MyLeagueService;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/my_league/v1")
@@ -31,8 +34,9 @@ public class MyLeagueController {
   }
 
   @PostMapping("/league")
-  public ResponseEntity<League> postLeague(@RequestBody LeagueDto leagueDto) {
-    return new ResponseEntity<>(myLeagueService.createLeague(leagueDto), HttpStatus.OK);
+  @ResponseStatus(HttpStatus.CREATED)
+  public Mono<DefaultDto> postLeague(@RequestBody LeagueDto leagueDto) {
+    return myLeagueService.createLeague(leagueDto);
   }
 
   @GetMapping("/league")

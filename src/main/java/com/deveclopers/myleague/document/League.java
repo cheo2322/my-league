@@ -13,18 +13,18 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @Setter
 public class League {
 
-  @Id
-  private String leagueId;
+  @Id private String leagueId;
   private String name;
   private String location;
-  private String field;
+  private List<String> fields;
   private String major;
-  @DocumentReference
-  private List<Team> teams;
+  @DocumentReference private List<Team> teams;
   private String picture;
   private List<Phase> phases;
   private List<Statistic> statistics;
   private Positions positions;
-  @DocumentReference
-  private List<Round> rounds;
+  @DocumentReference private List<Round> rounds;
+  private Boolean isComplete;
+  private Boolean isStarted;
+  private Boolean isFinished;
 }
