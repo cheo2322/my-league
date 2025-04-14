@@ -1,6 +1,5 @@
 package com.deveclopers.myleague.service;
 
-import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
@@ -57,6 +56,16 @@ public class MyLeagueService {
         .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 
+  public Flux<TeamDto> getTeamsFromLeague(String leagueId) {
+    return leagueRepository
+        .findById(leagueId)
+        .flatMapMany(
+            leagueDB ->
+                Flux.fromIterable(leagueDB.getTeams())
+                    .flatMap(teamId -> teamRepository.findById(teamId.toHexString())))
+        .map(TEAM_MAPPER::instanceToDto);
+  }
+
   public Flux<DefaultDto> getLeagues() {
     return leagueRepository.findAll().map(LEAGUE_MAPPER::instanceToDefaultDto);
   }
@@ -66,13 +75,6 @@ public class MyLeagueService {
         .findById(id)
         .map(LEAGUE_MAPPER::instanceToDefaultDto)
         .switchIfEmpty(Mono.error(new RuntimeException()));
-  }
-
-  public List<Team> getTeams(String leagueId) {
-    //    League league = leagueRepository.findById(leagueId).orElseThrow();
-
-    //    return league.getTeams();
-    return null;
   }
 
   public void generateRandomMatchDays(String leagueId) {

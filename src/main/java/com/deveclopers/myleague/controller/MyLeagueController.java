@@ -1,14 +1,11 @@
 package com.deveclopers.myleague.controller;
 
-import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.MyLeagueService;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +41,12 @@ public class MyLeagueController {
     return myLeagueService.addTeamToLeague(teamDto, leagueId);
   }
 
+  @GetMapping("/{id}/teams")
+  @ResponseStatus(HttpStatus.OK)
+  public Flux<TeamDto> getTeams(@PathVariable String id) {
+    return myLeagueService.getTeamsFromLeague(id);
+  }
+
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public Flux<DefaultDto> getLeague() {
@@ -54,10 +57,5 @@ public class MyLeagueController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<DefaultDto> getLeague(@PathVariable String id) {
     return myLeagueService.getLeague(id);
-  }
-
-  @GetMapping("/{id}/team")
-  public ResponseEntity<List<Team>> getTeams(@PathVariable String id) {
-    return ResponseEntity.ok(myLeagueService.getTeams(id));
   }
 }
