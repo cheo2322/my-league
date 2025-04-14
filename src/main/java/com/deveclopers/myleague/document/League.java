@@ -1,6 +1,7 @@
 package com.deveclopers.myleague.document;
 
 import com.deveclopers.myleague.service.Round;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,7 @@ public class League {
   private String location;
   private List<String> fields;
   private String major;
-  private List<ObjectId> teams;
+  private List<ObjectId> teams = new ArrayList<>();
   private String picture;
   private List<Phase> phases;
   private List<Statistic> statistics;
