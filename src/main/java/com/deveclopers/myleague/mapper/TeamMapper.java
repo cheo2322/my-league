@@ -8,7 +8,9 @@ import org.mapstruct.factory.Mappers;
 @Mapper(componentModel = "spring")
 public interface TeamMapper {
 
-   TeamMapper INSTANCE = Mappers.getMapper(TeamMapper.class);
+  TeamMapper INSTANCE = Mappers.getMapper(TeamMapper.class);
 
-   Team dtoToTeam(TeamDto teamDto);
+  Team dtoToTeam(TeamDto teamDto);
+
+  TeamDto instanceToDto(Team team);
 }

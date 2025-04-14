@@ -4,6 +4,7 @@ import com.deveclopers.myleague.service.Round;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -18,7 +19,7 @@ public class League {
   private String location;
   private List<String> fields;
   private String major;
-  @DocumentReference private List<Team> teams;
+  private List<ObjectId> teams;
   private String picture;
   private List<Phase> phases;
   private List<Statistic> statistics;

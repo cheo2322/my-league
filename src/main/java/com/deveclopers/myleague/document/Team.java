@@ -11,8 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 public class Team {
 
-  @Id
-  private String teamId;
+  @Id private String id;
   private String name;
   private List<Player> players;
   private List<String> pictures;

@@ -1,15 +1,17 @@
 package com.deveclopers.myleague.service;
 
-import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.mapper.LeagueMapper;
+import com.deveclopers.myleague.mapper.TeamMapper;
 import com.deveclopers.myleague.repository.LeagueRepository;
 import com.deveclopers.myleague.repository.TeamRepository;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -19,6 +21,7 @@ public class MyLeagueService {
   private final TeamRepository teamRepository;
 
   private final LeagueMapper LEAGUE_MAPPER = LeagueMapper.INSTANCE;
+  private final TeamMapper TEAM_MAPPER = TeamMapper.INSTANCE;
 
   public MyLeagueService(LeagueRepository leagueRepository, TeamRepository teamRepository) {
     this.leagueRepository = leagueRepository;
@@ -31,37 +34,44 @@ public class MyLeagueService {
         .map(LEAGUE_MAPPER::instanceToDefaultDto);
   }
 
-  public List<League> getLeagues() {
-    //    return leagueRepository.findAll();
-    return null;
+  public Mono<TeamDto> addTeamToLeague(TeamDto teamDto, String leagueId) {
+    return leagueRepository
+        .findById(leagueId)
+        .flatMap(
+            leagueDB ->
+                teamRepository
+                    .save(TEAM_MAPPER.dtoToTeam(teamDto))
+                    .map(
+                        teamDB -> {
+                          ObjectId teamId = new ObjectId(teamDB.getId());
+                          if (leagueDB.getTeams() == null || leagueDB.getTeams().isEmpty()) {
+                            leagueDB.setTeams(List.of(teamId));
+                          } else {
+                            leagueDB.getTeams().add(teamId);
+                          }
+
+                          leagueRepository.save(leagueDB).subscribe();
+
+                          return TEAM_MAPPER.instanceToDto(teamDB);
+                        }))
+        .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 
-  public League getLeague(String id) {
-    //    return leagueRepository.findById(id).orElseThrow();
-    return null;
+  public Flux<DefaultDto> getLeagues() {
+    return leagueRepository.findAll().map(LEAGUE_MAPPER::instanceToDefaultDto);
+  }
+
+  public Mono<DefaultDto> getLeague(String id) {
+    return leagueRepository
+        .findById(id)
+        .map(LEAGUE_MAPPER::instanceToDefaultDto)
+        .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 
   public List<Team> getTeams(String leagueId) {
     //    League league = leagueRepository.findById(leagueId).orElseThrow();
 
     //    return league.getTeams();
-    return null;
-  }
-
-  public Team addTeamToLeague(TeamDto teamDto, String leagueId) {
-    //    League league = leagueRepository.findById(leagueId).orElseThrow();
-    //    Team newTeam = TeamMapper.INSTANCE.dtoToTeam(teamDto);
-    //    Team saved = teamRepository.save(newTeam);
-    //
-    //    if (league.getTeams() != null && !league.getTeams().isEmpty()) {
-    //      league.getTeams().add(saved);
-    //    } else {
-    //      league.setTeams(Collections.singletonList(saved));
-    //    }
-    //
-    //    leagueRepository.save(league);
-    //
-    //    return saved;
     return null;
   }
 
