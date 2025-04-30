@@ -26,7 +26,6 @@ public class League {
   private List<Statistic> statistics;
   private Positions positions;
   @DocumentReference private List<Round> rounds;
-  private Boolean isComplete;
   private Boolean isStarted;
   private Boolean isFinished;
 }
