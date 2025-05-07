@@ -3,7 +3,7 @@ package com.deveclopers.myleague.controller;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
-import com.deveclopers.myleague.service.MyLeagueService;
+import com.deveclopers.myleague.service.LeagueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,36 +21,36 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/my_league/v1/leagues")
 @Slf4j
 @CrossOrigin(origins = {"*"})
-public class MyLeagueController {
+public class LeagueController {
 
-  private final MyLeagueService myLeagueService;
+  private final LeagueService leagueService;
 
-  public MyLeagueController(MyLeagueService myLeagueService) {
-    this.myLeagueService = myLeagueService;
+  public LeagueController(LeagueService leagueService) {
+    this.leagueService = leagueService;
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<DefaultDto> postLeague(@RequestBody LeagueDto leagueDto) {
-    return myLeagueService.createLeague(leagueDto);
+    return leagueService.createLeague(leagueDto);
   }
 
   @PostMapping("/{id}/team")
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<TeamDto> addTeam(@PathVariable("id") String leagueId, @RequestBody TeamDto teamDto) {
-    return myLeagueService.addTeamToLeague(teamDto, leagueId);
+    return leagueService.addTeamToLeague(teamDto, leagueId);
   }
 
   @GetMapping("/{id}/teams")
   @ResponseStatus(HttpStatus.OK)
   public Flux<TeamDto> getTeams(@PathVariable String id) {
-    return myLeagueService.getTeamsFromLeague(id);
+    return leagueService.getTeamsFromLeague(id);
   }
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public Flux<DefaultDto> getLeague() {
-    return myLeagueService.getLeagues();
+    return leagueService.getLeagues();
   }
 
   @GetMapping("/{id}")

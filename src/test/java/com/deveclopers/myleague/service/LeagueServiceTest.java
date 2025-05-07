@@ -1,6 +1,5 @@
 package com.deveclopers.myleague.service;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import com.deveclopers.myleague.repository.LeagueRepository;
@@ -12,13 +11,14 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MyLeagueServiceTest {
+class LeagueServiceTest {
 
   @Mock LeagueRepository leagueRepository;
 
   @Mock TeamRepository teamRepository;
 
-  @InjectMocks MyLeagueService service;
+  @InjectMocks
+  LeagueService service;
 
   @BeforeEach
   void setUp() {

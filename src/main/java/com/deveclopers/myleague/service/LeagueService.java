@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-public class MyLeagueService {
+public class LeagueService {
 
   private final LeagueRepository leagueRepository;
   private final TeamRepository teamRepository;
@@ -22,7 +22,7 @@ public class MyLeagueService {
   private final LeagueMapper LEAGUE_MAPPER = LeagueMapper.INSTANCE;
   private final TeamMapper TEAM_MAPPER = TeamMapper.INSTANCE;
 
-  public MyLeagueService(LeagueRepository leagueRepository, TeamRepository teamRepository) {
+  public LeagueService(LeagueRepository leagueRepository, TeamRepository teamRepository) {
     this.leagueRepository = leagueRepository;
     this.teamRepository = teamRepository;
   }

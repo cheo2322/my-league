@@ -1,3 +1,3 @@
 package com.deveclopers.myleague.dto;
 
-public record LeagueDto(String name, String major) {}
+public record LeagueDto(String id, String name, String major) {}
