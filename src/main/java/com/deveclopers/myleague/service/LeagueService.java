@@ -70,10 +70,10 @@ public class LeagueService {
     return leagueRepository.findAll().map(LEAGUE_MAPPER::instanceToDefaultDto);
   }
 
-  public Mono<DefaultDto> getLeague(String id) {
+  public Mono<LeagueDto> getLeague(String id) {
     return leagueRepository
         .findById(id)
-        .map(LEAGUE_MAPPER::instanceToDefaultDto)
+        .map(LEAGUE_MAPPER::instanceToDto)
         .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 

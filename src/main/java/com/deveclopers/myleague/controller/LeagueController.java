@@ -55,7 +55,7 @@ public class LeagueController {
 
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public Mono<DefaultDto> getLeague(@PathVariable String id) {
-    return myLeagueService.getLeague(id);
+  public Mono<LeagueDto> getLeague(@PathVariable String id) {
+    return leagueService.getLeague(id);
   }
 }

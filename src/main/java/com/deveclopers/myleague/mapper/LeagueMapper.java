@@ -16,4 +16,7 @@ public interface LeagueMapper {
 
   @Mapping(source = "leagueId", target = "id")
   DefaultDto instanceToDefaultDto(League league);
+
+  @Mapping(source = "leagueId", target = "id")
+  LeagueDto instanceToDto(League league);
 }
