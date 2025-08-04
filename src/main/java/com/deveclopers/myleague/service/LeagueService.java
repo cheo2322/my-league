@@ -34,6 +34,8 @@ public class LeagueService {
   }
 
   public Mono<TeamDto> addTeamToLeague(TeamDto teamDto, String leagueId) {
+    teamDto.setLeagueId(leagueId);
+
     return leagueRepository
         .findById(leagueId)
         .flatMap(

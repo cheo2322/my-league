@@ -17,4 +17,5 @@ public class Team {
   private List<String> pictures;
   private String major;
   private String abbreviation;
+  private String leagueId;
 }

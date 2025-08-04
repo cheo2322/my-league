@@ -11,4 +11,5 @@ public class TeamDto {
   private String name;
   private String major;
   private String abbreviation;
+  private String leagueId;
 }
