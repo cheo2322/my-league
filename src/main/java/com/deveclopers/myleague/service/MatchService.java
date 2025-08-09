@@ -4,8 +4,9 @@ import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.MatchDto;
 import com.deveclopers.myleague.repository.MatchRepository;
 import com.deveclopers.myleague.repository.TeamRepository;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,6 +23,9 @@ public class MatchService {
   }
 
   public Flux<MatchDto> getMatches() {
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
     return matchRepository
         .findAll()
         .flatMap(
@@ -34,8 +38,8 @@ public class MatchService {
                           Team homeTeam = tuple.getT1();
                           Team visitTeam = tuple.getT2();
 
-                          LocalDateTime matchTime =
-                              match.getMatchTime().atZone(ZoneId.of("Etc/GMT+5")).toLocalDateTime();
+                          ZonedDateTime matchTime =
+                              match.getMatchTime().atZone(ZoneId.of("America/Guayaquil"));
 
                           return new MatchDto(
                               match.getMatchId(),
@@ -44,13 +48,8 @@ public class MatchService {
                               match.getHomeResult(),
                               match.getVisitResult(),
                               match.getStatus().name(),
-                              String.format(
-                                  "%02d-%02d-%d",
-                                  matchTime.getDayOfMonth(),
-                                  matchTime.getMonthValue(),
-                                  matchTime.getYear()),
-                              String.format(
-                                  "%02d:%02d", matchTime.getHour(), matchTime.getMinute()));
+                              matchTime.format(dateFormatter),
+                              matchTime.format(timeFormatter));
                         }));
   }
 }
