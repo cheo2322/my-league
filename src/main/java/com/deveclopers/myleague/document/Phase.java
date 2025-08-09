@@ -19,6 +19,7 @@ public class Phase {
   private String name;
   private PhaseType phaseType;
   private PhaseCycle phaseCycle;
+  private ProgressStatus phaseStatus;
 
   // TODO: Make enums to be part of a database's table (Epic 001)
   private enum PhaseType {

@@ -1,6 +1,6 @@
 package com.deveclopers.myleague.service;
 
-import com.deveclopers.myleague.dto.DefaultDto;
+import com.deveclopers.myleague.dto.PhaseDto;
 import com.deveclopers.myleague.mapper.PhaseMapper;
 import com.deveclopers.myleague.repository.PhaseRepository;
 import org.bson.types.ObjectId;
@@ -16,9 +16,9 @@ public class PhaseService {
     this.phaseRepository = phaseRepository;
   }
 
-  public Flux<DefaultDto> getPhasesByLeagueId(String leagueId) {
+  public Flux<PhaseDto> getPhasesByLeagueId(String leagueId) {
     return phaseRepository
         .findByLeagueId(new ObjectId(leagueId))
-        .map(PhaseMapper.INSTANCE::instanceToDefaultDto);
+        .map(PhaseMapper.INSTANCE::instanceToDto);
   }
 }

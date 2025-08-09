@@ -30,6 +30,6 @@ public class Match {
   private Boolean hasPenalties = false;
   private BinaryList homePenalties;
   private BinaryList visitantPenalties;
-  private MatchStatus status;
+  private ProgressStatus status;
   private LocalDateTime matchTime;
 }

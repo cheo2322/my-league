@@ -2,6 +2,7 @@ package com.deveclopers.myleague.controller;
 
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
+import com.deveclopers.myleague.dto.PhaseDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.LeagueService;
 import com.deveclopers.myleague.service.PhaseService;
@@ -64,7 +65,7 @@ public class LeagueController {
 
   @GetMapping("/{id}/phases")
   @ResponseStatus(HttpStatus.OK)
-  public Flux<DefaultDto> getDefaultPhases(@PathVariable("id") String leagueId) {
+  public Flux<PhaseDto> getDefaultPhases(@PathVariable("id") String leagueId) {
     return phaseService.getPhasesByLeagueId(leagueId);
   }
 }
