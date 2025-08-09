@@ -1,6 +1,6 @@
 package com.deveclopers.myleague.utils;
 
-import com.deveclopers.myleague.service.Round;
+import com.deveclopers.myleague.document.Round;
 import java.util.List;
 
 public class LeagueUtil {

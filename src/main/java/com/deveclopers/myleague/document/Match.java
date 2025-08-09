@@ -3,26 +3,31 @@ package com.deveclopers.myleague.document;
 import com.deveclopers.myleague.utils.BinaryList;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 @Getter
 @Setter
-@ToString
 public class Match {
 
-  @Id
-  private String matchId;
-  private Team home;
-  private Team visitant;
+  @Id private String matchId;
+
+  /** Reference {@link Round} */
+  private ObjectId roundId;
+
+  /** Reference: {@link :Team} */
+  private ObjectId homeTeam;
+
+  /** Reference: {@link :Team} */
+  private ObjectId visitTeam;
+
   private Integer homeResult;
-  private Integer visitantResult;
-  private Boolean hasExtraTime;
-  private Boolean hasPenalties;
+  private Integer visitResult;
+  private Boolean hasExtraTime = false; // TODO: Add result
+  private Boolean hasPenalties = false;
   private BinaryList homePenalties;
   private BinaryList visitantPenalties;
-  private Team winner;
-  private Boolean hasFinished;
+  private MatchStatus status;
 }
