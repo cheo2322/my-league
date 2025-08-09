@@ -2,7 +2,6 @@ package com.deveclopers.myleague.service;
 
 import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.MatchDto;
-import com.deveclopers.myleague.mapper.MatchMapper;
 import com.deveclopers.myleague.repository.MatchRepository;
 import com.deveclopers.myleague.repository.TeamRepository;
 import org.springframework.stereotype.Service;
@@ -33,15 +32,22 @@ public class MatchService {
                           Team homeTeam = tuple.getT1();
                           Team visitTeam = tuple.getT2();
 
-                          MatchDto matchDtoPrevious = MatchMapper.INSTANCE.instanceToDto(match);
-
                           return new MatchDto(
-                              matchDtoPrevious.id(),
+                              match.getMatchId(),
                               homeTeam.getName(),
                               visitTeam.getName(),
-                              matchDtoPrevious.homeResult(),
-                              matchDtoPrevious.visitResult(),
-                              matchDtoPrevious.status());
+                              match.getHomeResult(),
+                              match.getVisitResult(),
+                              match.getStatus().name(),
+                              String.format(
+                                  "%02d - %02d - %d",
+                                  match.getMatchTime().getDayOfMonth(),
+                                  match.getMatchTime().getMonthValue(),
+                                  match.getMatchTime().getYear()),
+                              String.format(
+                                  "%02d:%02d",
+                                  match.getMatchTime().getHour(),
+                                  match.getMatchTime().getMinute()));
                         }));
   }
 }

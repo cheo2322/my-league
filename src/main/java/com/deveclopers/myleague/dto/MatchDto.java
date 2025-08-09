@@ -6,4 +6,6 @@ public record MatchDto(
     String visitTeam,
     Integer homeResult,
     Integer visitResult,
-    String status) {}
+    String status,
+    String date,
+    String time) {}

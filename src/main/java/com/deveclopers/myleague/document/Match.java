@@ -1,6 +1,7 @@
 package com.deveclopers.myleague.document;
 
 import com.deveclopers.myleague.utils.BinaryList;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import org.bson.types.ObjectId;
@@ -30,4 +31,5 @@ public class Match {
   private BinaryList homePenalties;
   private BinaryList visitantPenalties;
   private MatchStatus status;
+  private LocalDateTime matchTime;
 }
