@@ -40,7 +40,7 @@ public class MatchService {
                               match.getVisitResult(),
                               match.getStatus().name(),
                               String.format(
-                                  "%02d - %02d - %d",
+                                  "%02d-%02d-%d",
                                   match.getMatchTime().getDayOfMonth(),
                                   match.getMatchTime().getMonthValue(),
                                   match.getMatchTime().getYear()),
