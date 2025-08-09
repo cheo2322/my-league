@@ -2,6 +2,7 @@ package com.deveclopers.myleague.document;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,13 +12,23 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Phase {
 
   @Id private String phaseId;
+
+  /** Reference: {@link League} */
+  private ObjectId leagueId;
+
   private String name;
   private PhaseType phaseType;
+  private PhaseCycle phaseCycle;
 
-  enum PhaseType {
+  // TODO: Make enums to be part of a database's table (Epic 001)
+  private enum PhaseType {
     LEAGUE,
     GROUP,
-    SINGLE_MATCH,
+    PLAYOFF
+  }
+
+  enum PhaseCycle {
+    ONE_MATCH,
     DOUBLE_MATCH
   }
 }

@@ -4,6 +4,7 @@ import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.LeagueService;
+import com.deveclopers.myleague.service.PhaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,9 +25,11 @@ import reactor.core.publisher.Mono;
 public class LeagueController {
 
   private final LeagueService leagueService;
+  private final PhaseService phaseService;
 
-  public LeagueController(LeagueService leagueService) {
+  public LeagueController(LeagueService leagueService, PhaseService phaseService) {
     this.leagueService = leagueService;
+    this.phaseService = phaseService;
   }
 
   @PostMapping
@@ -57,5 +60,11 @@ public class LeagueController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<LeagueDto> getLeague(@PathVariable String id) {
     return leagueService.getLeague(id);
+  }
+
+  @GetMapping("/{id}/phases")
+  @ResponseStatus(HttpStatus.OK)
+  public Flux<DefaultDto> getDefaultPhases(@PathVariable("id") String leagueId) {
+    return phaseService.getPhasesByLeagueId(leagueId);
   }
 }

@@ -38,6 +38,7 @@ public class MatchService {
                           Team homeTeam = tuple.getT1();
                           Team visitTeam = tuple.getT2();
 
+                          // TODO: Fix the zoned time
                           ZonedDateTime matchTime =
                               match.getMatchTime().atZone(ZoneId.of("America/Guayaquil"));
 
