@@ -22,6 +22,8 @@ public class MatchService {
     this.teamRepository = teamRepository;
   }
 
+  // TODO: Need to be deprecated
+  @Deprecated
   public Flux<MatchDto> getMatches() {
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");

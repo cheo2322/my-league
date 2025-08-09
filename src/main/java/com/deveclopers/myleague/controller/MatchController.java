@@ -24,6 +24,7 @@ public class MatchController {
   }
 
   // TODO: It must depend on each user
+  @Deprecated
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public Flux<MatchDto> getMatches() {
