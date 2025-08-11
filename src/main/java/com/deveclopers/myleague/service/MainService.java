@@ -24,7 +24,7 @@ public class MainService {
   }
 
   public Flux<RoundDto> getMainPage() {
-    return roundService.getAllRounds().flatMap(this::buildRoundDto);
+    return roundService.getAllRounds().concatMap(this::buildRoundDto);
   }
 
   private Mono<RoundDto> buildRoundDto(Round round) {

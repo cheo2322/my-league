@@ -44,7 +44,7 @@ public class RoundService {
   }
 
   public Flux<Round> getAllRounds() {
-    return roundRepository.findAll();
+    return roundRepository.findAllByOrderByOrderAsc();
   }
 
   private Mono<MatchDto> buildMatchDto(Match match) {
