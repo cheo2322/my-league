@@ -38,8 +38,8 @@ public class RoundService {
         .findById(roundId)
         .flatMapMany(
             round ->
-                matchRepository.findByRoundIdOrderByMatchTime(new ObjectId(round.getRoundId())))
-        .flatMap(this::buildMatchDto)
+                matchRepository.findByRoundIdOrderByMatchTimeAsc(new ObjectId(round.getRoundId())))
+        .concatMap(this::buildMatchDto)
         .switchIfEmpty(Mono.error(new RuntimeException())); // TODO: Replace with custom exception
   }
 
