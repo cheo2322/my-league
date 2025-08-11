@@ -1,6 +1,10 @@
 package com.deveclopers.myleague.service;
 
+import com.deveclopers.myleague.document.Phase;
+import com.deveclopers.myleague.document.Round;
+import com.deveclopers.myleague.dto.MatchDto;
 import com.deveclopers.myleague.dto.RoundDto;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,30 +24,28 @@ public class MainService {
   }
 
   public Flux<RoundDto> getMainPage() {
-    return roundService
-        .getAllRounds()
-        .flatMap(
-            round ->
-                Mono.zip(
-                        phaseService.getPhase(round.getPhaseId().toHexString()),
-                        roundService.getMatchesByRoundId(round.getRoundId()).collectList())
-                    .flatMap(
-                        tuple -> {
-                          var phase = tuple.getT1();
-                          var matches = tuple.getT2();
+    return roundService.getAllRounds().flatMap(this::buildRoundDto);
+  }
 
-                          return leagueService
-                              .getLeagueById(phase.getLeagueId().toHexString())
-                              .map(
-                                  league ->
-                                      new RoundDto(
-                                          round.getRoundId(),
-                                          league.getLeagueId(),
-                                          league.getName(),
-                                          phase.getPhaseId(),
-                                          phase.getName(),
-                                          round.getOrder(),
-                                          matches));
-                        }));
+  private Mono<RoundDto> buildRoundDto(Round round) {
+    return Mono.zip(
+            phaseService.getPhase(round.getPhaseId().toHexString()),
+            roundService.getMatchesByRoundId(round.getRoundId()).collectList())
+        .flatMap(tuple -> assembleRoundDto(round, tuple.getT1(), tuple.getT2()));
+  }
+
+  private Mono<RoundDto> assembleRoundDto(Round round, Phase phase, List<MatchDto> matches) {
+    return leagueService
+        .getLeagueById(phase.getLeagueId().toHexString())
+        .map(
+            league ->
+                new RoundDto(
+                    round.getRoundId(),
+                    league.getLeagueId(),
+                    league.getName(),
+                    phase.getPhaseId(),
+                    phase.getName(),
+                    round.getOrder(),
+                    matches));
   }
 }

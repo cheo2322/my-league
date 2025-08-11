@@ -7,5 +7,5 @@ import reactor.core.publisher.Flux;
 
 public interface MatchRepository extends ReactiveMongoRepository<Match, String> {
 
-  Flux<Match> findByRoundId(ObjectId roundId);
+  Flux<Match> findByRoundIdOrderByMatchTime(ObjectId roundId);
 }
