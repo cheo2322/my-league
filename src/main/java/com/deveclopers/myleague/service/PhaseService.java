@@ -42,8 +42,11 @@ public class PhaseService {
                         matches ->
                             new RoundDto(
                                 round.getRoundId(),
+                                null,
+                                "",
+                                phaseId,
+                                "",
                                 round.getOrder(),
-                                round.getPhaseId().toHexString(),
                                 matches)));
   }
 }
