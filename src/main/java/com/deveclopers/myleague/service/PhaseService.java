@@ -1,5 +1,6 @@
 package com.deveclopers.myleague.service;
 
+import com.deveclopers.myleague.document.Phase;
 import com.deveclopers.myleague.dto.PhaseDto;
 import com.deveclopers.myleague.dto.RoundDto;
 import com.deveclopers.myleague.mapper.PhaseMapper;
@@ -8,6 +9,7 @@ import com.deveclopers.myleague.repository.RoundRepository;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class PhaseService {
@@ -48,5 +50,9 @@ public class PhaseService {
                                 "",
                                 round.getOrder(),
                                 matches)));
+  }
+
+  public Mono<Phase> getPhase(String phaseId) {
+    return phaseRepository.findById(phaseId);
   }
 }

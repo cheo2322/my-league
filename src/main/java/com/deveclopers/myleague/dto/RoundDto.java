@@ -3,7 +3,7 @@ package com.deveclopers.myleague.dto;
 import java.util.List;
 
 public record RoundDto(
-    String id,
+    String roundId,
     String leagueId,
     String leagueName,
     String phaseId,

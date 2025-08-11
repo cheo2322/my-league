@@ -1,5 +1,6 @@
 package com.deveclopers.myleague.service;
 
+import com.deveclopers.myleague.document.Round;
 import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.MatchDto;
 import com.deveclopers.myleague.repository.MatchRepository;
@@ -66,5 +67,9 @@ public class RoundService {
                                           matchTime.format(timeFormatter));
                                     })))
         .switchIfEmpty(Mono.error(new RuntimeException()));
+  }
+
+  public Flux<Round> getAllRounds() {
+    return roundRepository.findAll();
   }
 }

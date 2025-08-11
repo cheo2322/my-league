@@ -1,5 +1,6 @@
 package com.deveclopers.myleague.service;
 
+import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.TeamDto;
@@ -97,5 +98,9 @@ public class LeagueService {
     //        rounds.get(i).getMatches().add(match);
     //      }
     //    }
+  }
+
+  public Mono<League> getLeagueById(String id) {
+    return leagueRepository.findById(id);
   }
 }
