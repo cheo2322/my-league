@@ -133,7 +133,6 @@ public class LeagueService {
         .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 
-  // TODO: update when exists
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
     return roundService
         .getRound(roundId)
@@ -161,13 +160,28 @@ public class LeagueService {
                                 .reversed()
                                 .thenComparing(Position::getGoals, Comparator.reverseOrder()));
 
-                        Positions positionsTable = new Positions();
-                        positionsTable.setLeagueId(new ObjectId(leagueId));
-                        positionsTable.setPhaseId(new ObjectId(phaseId));
-                        positionsTable.setRoundId(new ObjectId(roundId));
-                        positionsTable.setPositions(positions);
+                        return positionsRepository
+                            .findByLeagueIdAndPhaseIdAndRoundId(
+                                new ObjectId(leagueId),
+                                new ObjectId(phaseId),
+                                new ObjectId(roundId))
+                            .flatMap(
+                                existing -> {
+                                  existing.setPositions(positions);
+                                  return positionsRepository.save(existing);
+                                })
+                            .switchIfEmpty(
+                                Mono.defer(
+                                    () -> {
+                                      Positions positionsTable = new Positions();
+                                      positionsTable.setLeagueId(new ObjectId(leagueId));
+                                      positionsTable.setPhaseId(new ObjectId(phaseId));
+                                      positionsTable.setRoundId(new ObjectId(roundId));
+                                      positionsTable.setPositions(positions);
 
-                        return positionsRepository.save(positionsTable).then();
+                                      return positionsRepository.save(positionsTable);
+                                    }))
+                            .then();
                       });
             });
   }
