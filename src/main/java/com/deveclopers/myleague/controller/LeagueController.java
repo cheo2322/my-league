@@ -48,8 +48,8 @@ public class LeagueController {
 
   @GetMapping("/{id}/teams")
   @ResponseStatus(HttpStatus.OK)
-  public Flux<TeamDto> getTeams(@PathVariable String id) {
-    return leagueService.getTeamsFromLeague(id);
+  public Flux<TeamDto> getTeams(@PathVariable("id") String leagueId) {
+    return leagueService.getTeamsById(leagueId);
   }
 
   @GetMapping

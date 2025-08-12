@@ -35,7 +35,7 @@ class LeagueServiceTest {
   void getLeague() {}
 
   @Test
-  void getTeamsFromLeague() {}
+  void getTeamsById() {}
 
   @Test
   void addTeamToLeague() {}

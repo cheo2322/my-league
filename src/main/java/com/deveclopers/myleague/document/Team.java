@@ -3,6 +3,7 @@ package com.deveclopers.myleague.document;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,5 +18,7 @@ public class Team {
   private List<String> pictures;
   private String major;
   private String abbreviation;
-  private String leagueId;
+
+  /** References: {@link League} */
+  private ObjectId leagueId;
 }

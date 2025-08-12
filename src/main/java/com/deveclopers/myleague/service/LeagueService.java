@@ -79,14 +79,8 @@ public class LeagueService {
         .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 
-  public Flux<TeamDto> getTeamsFromLeague(String leagueId) {
-    return leagueRepository
-        .findById(leagueId)
-        .flatMapMany(
-            leagueDB ->
-                Flux.fromIterable(leagueDB.getTeams())
-                    .flatMap(teamId -> teamRepository.findById(teamId.toHexString())))
-        .map(TEAM_MAPPER::instanceToDto);
+  public Flux<TeamDto> getTeamsById(String leagueId) {
+    return teamRepository.findByLeagueId(new ObjectId(leagueId)).map(TEAM_MAPPER::instanceToDto);
   }
 
   public Flux<DefaultDto> getLeagues() {
@@ -138,6 +132,7 @@ public class LeagueService {
   }
 
   // TODO: update when exists
+  // TODO: create new when no matches
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
     return roundService
         .getRound(roundId)
