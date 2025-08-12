@@ -98,7 +98,6 @@ public class LeagueService {
     return leagueRepository.findById(id);
   }
 
-  // TODO: Check when there are no positions
   public Mono<PositionsDto> getPositions(String leagueId, String phaseId, String roundId) {
     return positionsRepository
         .findByLeagueIdAndPhaseIdAndRoundId(
@@ -130,7 +129,7 @@ public class LeagueService {
                                             positions.getPositionsId(),
                                             round.getOrder(),
                                             positionDtos))))
-        .switchIfEmpty(Mono.error(new RuntimeException()));
+        .switchIfEmpty(Mono.empty());
   }
 
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
@@ -158,7 +157,10 @@ public class LeagueService {
                         positions.sort(
                             Comparator.comparing(Position::getPoints)
                                 .reversed()
-                                .thenComparing(Position::getGoals, Comparator.reverseOrder()));
+                                .thenComparing(Position::getGoals, Comparator.reverseOrder())
+                                .thenComparing(Position::getFavorGoals, Comparator.reverseOrder())
+                                .thenComparing(Position::getAgainstGoals)
+                                .thenComparing(Position::getPlayedGames));
 
                         return positionsRepository
                             .findByLeagueIdAndPhaseIdAndRoundId(
