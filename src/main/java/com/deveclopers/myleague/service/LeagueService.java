@@ -98,6 +98,8 @@ public class LeagueService {
     return leagueRepository.findById(id);
   }
 
+  // TODO: missing played games
+  // TODO: Check when there are no positions
   public Mono<PositionsDto> getPositions(String leagueId, String phaseId, String roundId) {
     return positionsRepository
         .findByLeagueIdAndPhaseIdAndRoundId(
@@ -132,7 +134,6 @@ public class LeagueService {
   }
 
   // TODO: update when exists
-  // TODO: create new when no matches
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
     return roundService
         .getRound(roundId)
@@ -146,18 +147,28 @@ public class LeagueService {
               List<Position> positions = new ArrayList<>();
               matches.forEach(match -> assignPositions(match, positions));
 
-              positions.sort(
-                  Comparator.comparing(Position::getPoints)
-                      .reversed()
-                      .thenComparing(Position::getGoals, Comparator.reverseOrder()));
+              return getTeamsById(leagueId)
+                  .filter(
+                      teamDto ->
+                          positions.stream()
+                              .noneMatch(p -> p.getTeamId().toHexString().equals(teamDto.getId())))
+                  .doOnNext(teamDto -> positions.add(new Position(teamDto.getId())))
+                  .collectList()
+                  .flatMap(
+                      ignored -> {
+                        positions.sort(
+                            Comparator.comparing(Position::getPoints)
+                                .reversed()
+                                .thenComparing(Position::getGoals, Comparator.reverseOrder()));
 
-              Positions positionsTable = new Positions();
-              positionsTable.setLeagueId(new ObjectId(leagueId));
-              positionsTable.setPhaseId(new ObjectId(phaseId));
-              positionsTable.setRoundId(new ObjectId(roundId));
-              positionsTable.setPositions(positions);
+                        Positions positionsTable = new Positions();
+                        positionsTable.setLeagueId(new ObjectId(leagueId));
+                        positionsTable.setPhaseId(new ObjectId(phaseId));
+                        positionsTable.setRoundId(new ObjectId(roundId));
+                        positionsTable.setPositions(positions);
 
-              return positionsRepository.save(positionsTable).then();
+                        return positionsRepository.save(positionsTable).then();
+                      });
             });
   }
 
