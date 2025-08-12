@@ -3,6 +3,7 @@ package com.deveclopers.myleague.controller;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.PhaseDto;
+import com.deveclopers.myleague.dto.PositionsDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.LeagueService;
 import com.deveclopers.myleague.service.PhaseService;
@@ -67,5 +68,24 @@ public class LeagueController {
   @ResponseStatus(HttpStatus.OK)
   public Flux<PhaseDto> getDefaultPhases(@PathVariable("id") String leagueId) {
     return phaseService.getPhasesByLeagueId(leagueId);
+  }
+
+  @GetMapping("/{id}/positions/{phaseId}/{roundId}")
+  @ResponseStatus(HttpStatus.OK)
+  public Mono<PositionsDto> getPositions(
+      @PathVariable("id") String leagueId,
+      @PathVariable("phaseId") String phaseId,
+      @PathVariable("roundId") String roundId) {
+    return leagueService.getPositions(leagueId, phaseId, roundId);
+  }
+
+  // Warning: only for internal use
+  @PostMapping("/{id}/positions/{phaseId}/{roundId}")
+  @ResponseStatus(HttpStatus.CREATED)
+  public Mono<Void> generatePositions(
+      @PathVariable("id") String leagueId,
+      @PathVariable("phaseId") String phaseId,
+      @PathVariable("roundId") String roundId) {
+    return leagueService.generatePositions(leagueId, phaseId, roundId);
   }
 }

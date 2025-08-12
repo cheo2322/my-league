@@ -8,5 +8,5 @@ public record RoundDto(
     String leagueName,
     String phaseId,
     String phase,
-    Integer order,
+    int order,
     List<MatchDto> matches) {}

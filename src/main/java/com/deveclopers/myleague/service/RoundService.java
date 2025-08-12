@@ -47,6 +47,14 @@ public class RoundService {
     return roundRepository.findAllByOrderByOrderAsc();
   }
 
+  public Mono<Round> getRound(String id) {
+    return roundRepository.findById(id);
+  }
+
+  public Flux<Match> getMatchesByRound(String roundId) {
+    return matchRepository.findByRoundIdOrderByMatchTimeAsc(new ObjectId(roundId));
+  }
+
   private Mono<MatchDto> buildMatchDto(Match match) {
     return Mono.zip(
             teamRepository.findById(match.getHomeTeam().toHexString()),

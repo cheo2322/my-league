@@ -1,13 +1,21 @@
 package com.deveclopers.myleague.service;
 
 import com.deveclopers.myleague.document.League;
+import com.deveclopers.myleague.document.Match;
+import com.deveclopers.myleague.document.Position;
+import com.deveclopers.myleague.document.Positions;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
+import com.deveclopers.myleague.dto.PositionDto;
+import com.deveclopers.myleague.dto.PositionsDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.mapper.LeagueMapper;
 import com.deveclopers.myleague.mapper.TeamMapper;
 import com.deveclopers.myleague.repository.LeagueRepository;
+import com.deveclopers.myleague.repository.PositionsRepository;
 import com.deveclopers.myleague.repository.TeamRepository;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
@@ -19,13 +27,25 @@ public class LeagueService {
 
   private final LeagueRepository leagueRepository;
   private final TeamRepository teamRepository;
+  private final PositionsRepository positionsRepository;
+
+  private final PhaseService phaseService;
+  private final RoundService roundService;
 
   private final LeagueMapper LEAGUE_MAPPER = LeagueMapper.INSTANCE;
   private final TeamMapper TEAM_MAPPER = TeamMapper.INSTANCE;
 
-  public LeagueService(LeagueRepository leagueRepository, TeamRepository teamRepository) {
+  public LeagueService(
+      LeagueRepository leagueRepository,
+      TeamRepository teamRepository,
+      PositionsRepository positionsRepository,
+      PhaseService phaseService,
+      RoundService roundService) {
     this.leagueRepository = leagueRepository;
     this.teamRepository = teamRepository;
+    this.positionsRepository = positionsRepository;
+    this.phaseService = phaseService;
+    this.roundService = roundService;
   }
 
   public Mono<DefaultDto> createLeague(LeagueDto leagueDto) {
@@ -80,27 +100,93 @@ public class LeagueService {
         .switchIfEmpty(Mono.error(new RuntimeException()));
   }
 
-  public void generateRandomMatchDays(String leagueId) {
-    //    League league = leagueRepository.findById(leagueId).orElseThrow();
-    //    List<Team> teams = league.getTeams();
-    //    Collections.shuffle(teams);
-    //
-    //    List<Round> rounds = IntStream.range(0, teams.size() - 1)
-    //      .mapToObj(Round::new)
-    //      .toList();
-    //
-    //    for (int i = 0; i < teams.size() - 1; i++) {
-    //      for (int j = 0; j < teams.size() - 1; j++) {
-    //        Match match = new Match();
-    //        match.setHome(teams.get(i));
-    //        match.setVisitant(teams.get(j));
-    //
-    //        rounds.get(i).getMatches().add(match);
-    //      }
-    //    }
-  }
-
   public Mono<League> getLeagueById(String id) {
     return leagueRepository.findById(id);
+  }
+
+  public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
+    return roundService
+        .getRound(roundId)
+        .flatMapMany(
+            round ->
+                phaseService.getRoundsByPhaseId(phaseId).filter(r -> r.order() <= round.getOrder()))
+        .flatMap(roundDto -> roundService.getMatchesByRound(roundDto.roundId()))
+        .collectList()
+        .flatMap(
+            matches -> {
+              List<Position> positions = new ArrayList<>();
+              matches.forEach(match -> assignPositions(match, positions));
+
+              positions.sort(
+                  Comparator.comparing(Position::getPoints)
+                      .reversed()
+                      .thenComparing(Position::getGoals, Comparator.reverseOrder()));
+
+              Positions positionsTable = new Positions();
+              positionsTable.setLeagueId(new ObjectId(leagueId));
+              positionsTable.setPhaseId(new ObjectId(phaseId));
+              positionsTable.setRoundId(new ObjectId(roundId));
+              positionsTable.setPositions(positions);
+
+              return positionsRepository.save(positionsTable).then();
+            });
+  }
+
+  private void assignPositions(Match match, List<Position> positions) {
+    int homeGoals = match.getHomeResult();
+    int visitGoals = match.getVisitResult();
+
+    int pointsToAddToHomeTeam = homeGoals > visitGoals ? 3 : homeGoals < visitGoals ? 0 : 1;
+    int pointsToAddToVisitTeam = visitGoals > homeGoals ? 3 : visitGoals < homeGoals ? 0 : 1;
+
+    Position homeTeam = findPosition(positions, match.getHomeTeam());
+    assignPoints(
+        match.getMatchId(),
+        positions,
+        homeTeam,
+        match.getHomeTeam(),
+        pointsToAddToHomeTeam,
+        homeGoals,
+        visitGoals);
+
+    Position visitTeam = findPosition(positions, match.getVisitTeam());
+    assignPoints(
+        match.getMatchId(),
+        positions,
+        visitTeam,
+        match.getVisitTeam(),
+        pointsToAddToVisitTeam,
+        visitGoals,
+        homeGoals);
+
+    positions.sort(
+        Comparator.comparing(Position::getPoints)
+            .reversed()
+            .thenComparing(Position::getGoals, Comparator.reverseOrder()));
+  }
+
+  private static Position findPosition(List<Position> positions, ObjectId teamId) {
+    return positions.stream().filter(p -> p.getTeamId().equals(teamId)).findFirst().orElse(null);
+  }
+
+  private static void assignPoints(
+      String matchId,
+      List<Position> positions,
+      Position teamPosition,
+      ObjectId teamId,
+      int pointsToAdd,
+      int favorGoals,
+      int againstGoals) {
+    if (teamPosition == null) {
+      teamPosition = new Position(matchId);
+      teamPosition.setTeamId(teamId);
+      positions.add(teamPosition);
+    }
+
+    teamPosition.setPlayedGames(teamPosition.getPlayedGames() + 1);
+    teamPosition.setPoints(teamPosition.getPoints() + pointsToAdd);
+    teamPosition.setFavorGoals(teamPosition.getFavorGoals() + favorGoals);
+    teamPosition.setAgainstGoals(teamPosition.getAgainstGoals() + againstGoals);
+    teamPosition.setGoals(teamPosition.getFavorGoals() - teamPosition.getAgainstGoals());
   }
 }
