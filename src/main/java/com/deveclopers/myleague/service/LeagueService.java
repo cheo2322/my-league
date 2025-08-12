@@ -104,6 +104,40 @@ public class LeagueService {
     return leagueRepository.findById(id);
   }
 
+  public Mono<PositionsDto> getPositions(String leagueId, String phaseId, String roundId) {
+    return positionsRepository
+        .findByLeagueIdAndPhaseIdAndRoundId(
+            new ObjectId(leagueId), new ObjectId(phaseId), new ObjectId(roundId))
+        .flatMap(
+            positions ->
+                roundService
+                    .getRound(positions.getRoundId().toHexString())
+                    .flatMap(
+                        round ->
+                            Flux.fromIterable(positions.getPositions())
+                                .concatMap(
+                                    position ->
+                                        teamRepository
+                                            .findById(position.getTeamId().toHexString())
+                                            .map(
+                                                team ->
+                                                    new PositionDto(
+                                                        team.getName(),
+                                                        position.getPoints(),
+                                                        position.getFavorGoals(),
+                                                        position.getAgainstGoals(),
+                                                        position.getGoals())))
+                                .collectList()
+                                .map(
+                                    positionDtos ->
+                                        new PositionsDto(
+                                            positions.getPositionsId(),
+                                            round.getOrder(),
+                                            positionDtos))))
+        .switchIfEmpty(Mono.error(new RuntimeException()));
+  }
+
+  // TODO: update when exists
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
     return roundService
         .getRound(roundId)
