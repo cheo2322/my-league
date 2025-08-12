@@ -1,3 +1,4 @@
 package com.deveclopers.myleague.dto;
 
-public record PositionDto(String team, int points, int favorGoals, int againstGoals, int goals) {}
+public record PositionDto(
+    String team, int playedGames, int points, int favorGoals, int againstGoals, int goals) {}

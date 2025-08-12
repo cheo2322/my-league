@@ -98,7 +98,6 @@ public class LeagueService {
     return leagueRepository.findById(id);
   }
 
-  // TODO: missing played games
   // TODO: Check when there are no positions
   public Mono<PositionsDto> getPositions(String leagueId, String phaseId, String roundId) {
     return positionsRepository
@@ -119,6 +118,7 @@ public class LeagueService {
                                                 team ->
                                                     new PositionDto(
                                                         team.getName(),
+                                                        position.getPlayedGames(),
                                                         position.getPoints(),
                                                         position.getFavorGoals(),
                                                         position.getAgainstGoals(),
