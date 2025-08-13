@@ -83,8 +83,8 @@ public class LeagueService {
     return teamRepository.findByLeagueId(new ObjectId(leagueId)).map(TEAM_MAPPER::instanceToDto);
   }
 
-  public Flux<DefaultDto> getLeagues() {
-    return leagueRepository.findAll().map(LEAGUE_MAPPER::instanceToDefaultDto);
+  public Flux<LeagueDto> getLeagues() {
+    return leagueRepository.findAll().map(LEAGUE_MAPPER::instanceToDto);
   }
 
   public Mono<LeagueDto> getLeague(String id) {

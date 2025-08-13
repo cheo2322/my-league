@@ -54,7 +54,7 @@ public class LeagueController {
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public Flux<DefaultDto> getLeague() {
+  public Flux<LeagueDto> getLeagues() {
     return leagueService.getLeagues();
   }
 

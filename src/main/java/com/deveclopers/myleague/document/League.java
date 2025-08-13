@@ -19,12 +19,14 @@ public class League {
   private String location;
   private List<String> fields;
   private String major;
-  private List<ObjectId> teams = new ArrayList<>();
+  @Deprecated private List<ObjectId> teams = new ArrayList<>();
   private String picture;
-  private List<Phase> phases;
-  private List<Statistic> statistics;
-  private Positions positions;
-  @DocumentReference private List<Round> rounds;
-  private Boolean isStarted;
-  private Boolean isFinished;
+  @Deprecated private List<Phase> phases;
+  @Deprecated private List<Statistic> statistics;
+  @Deprecated private Positions positions;
+  @Deprecated @DocumentReference private List<Round> rounds;
+  private Boolean hasStarted;
+  private Boolean hasFinished;
+  private ObjectId activePhaseId;
+  private ObjectId activeRoundId;
 }
