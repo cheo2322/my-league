@@ -3,10 +3,13 @@ package com.deveclopers.myleague.service;
 import static com.deveclopers.myleague.constants.MyLeagueConstants.DATE_FORMATTER;
 import static com.deveclopers.myleague.constants.MyLeagueConstants.TIME_FORMATTER;
 
+import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.document.Match;
+import com.deveclopers.myleague.document.Phase;
 import com.deveclopers.myleague.document.Round;
 import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.MatchDto;
+import com.deveclopers.myleague.dto.RoundDto;
 import com.deveclopers.myleague.repository.MatchRepository;
 import com.deveclopers.myleague.repository.RoundRepository;
 import com.deveclopers.myleague.repository.TeamRepository;
@@ -43,16 +46,18 @@ public class RoundService {
         .switchIfEmpty(Mono.error(new RuntimeException())); // TODO: Replace with custom exception
   }
 
-  public Flux<Round> getAllRounds() {
-    return roundRepository.findAllByOrderByOrderAsc();
-  }
-
   public Mono<Round> getRound(String id) {
     return roundRepository.findById(id);
   }
 
   public Flux<Match> getMatchesByRound(String roundId) {
     return matchRepository.findByRoundIdOrderByMatchTimeAsc(new ObjectId(roundId));
+  }
+
+  public Flux<RoundDto> getFromLeagueAndPhase(League league, Phase phase) {
+    return roundRepository
+        .findByPhaseId(new ObjectId(phase.getPhaseId()))
+        .flatMap(round -> mapRound(league, phase, round));
   }
 
   private Mono<MatchDto> buildMatchDto(Match match) {
@@ -76,5 +81,20 @@ public class RoundService {
                   matchTime.format(DATE_FORMATTER),
                   matchTime.format(TIME_FORMATTER));
             });
+  }
+
+  private Mono<RoundDto> mapRound(League league, Phase phase, Round round) {
+    return this.getMatchesByRoundId(round.getRoundId())
+        .collectList()
+        .map(
+            matches ->
+                new RoundDto(
+                    round.getRoundId(),
+                    league.getLeagueId(),
+                    league.getName(),
+                    phase.getPhaseId(),
+                    phase.getName(),
+                    round.getOrder(),
+                    matches));
   }
 }

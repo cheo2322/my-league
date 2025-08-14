@@ -10,6 +10,4 @@ import reactor.core.publisher.Flux;
 public interface RoundRepository extends ReactiveMongoRepository<Round, String> {
 
   Flux<Round> findByPhaseId(ObjectId phaseId);
-
-  Flux<Round> findAllByOrderByOrderAsc();
 }

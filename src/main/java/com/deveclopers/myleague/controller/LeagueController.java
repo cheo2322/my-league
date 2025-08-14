@@ -4,6 +4,7 @@ import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.PhaseDto;
 import com.deveclopers.myleague.dto.PositionsDto;
+import com.deveclopers.myleague.dto.RoundDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.LeagueService;
 import com.deveclopers.myleague.service.PhaseService;
@@ -87,5 +88,11 @@ public class LeagueController {
       @PathVariable("phaseId") String phaseId,
       @PathVariable("roundId") String roundId) {
     return leagueService.generatePositions(leagueId, phaseId, roundId);
+  }
+
+  @GetMapping("/{id}/phases/active/rounds")
+  @ResponseStatus(HttpStatus.OK)
+  public Flux<RoundDto> getRoundsFromActivePhaseByLeagueId(@PathVariable("id") String leagueId) {
+    return leagueService.getRoundsFromActivePhaseByLeagueId(leagueId);
   }
 }
