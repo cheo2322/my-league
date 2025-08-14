@@ -24,7 +24,11 @@ public class MainService {
   }
 
   public Flux<RoundDto> getMainPage() {
-    return roundService.getAllRounds().concatMap(this::buildRoundDto);
+    return leagueService
+        .getLeagues()
+        .flatMap(
+            leagueDto ->
+                roundService.getRound(leagueDto.activeRoundId()).flatMapMany(this::buildRoundDto));
   }
 
   private Mono<RoundDto> buildRoundDto(Round round) {
