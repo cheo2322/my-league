@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -204,7 +205,17 @@ public class LeagueService {
             league ->
                 phaseService
                     .getPhase(league.getActivePhaseId().toHexString())
-                    .flatMapMany(phase -> roundService.getFromLeagueAndPhase(league, phase)));
+                    .flatMapMany(
+                        phase ->
+                            roundService
+                                .getFromLeagueAndPhase(league, phase)
+                                .collectList()
+                                .map(
+                                    list ->
+                                        list.stream()
+                                            .sorted(Comparator.comparing(RoundDto::order))
+                                            .collect(Collectors.toList()))
+                                .flatMapMany(Flux::fromIterable)));
   }
 
   private void assignPositions(Match match, List<Position> positions) {
