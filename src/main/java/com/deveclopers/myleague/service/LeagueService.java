@@ -121,7 +121,10 @@ public class LeagueService {
                                                         position.getPoints(),
                                                         position.getFavorGoals(),
                                                         position.getAgainstGoals(),
-                                                        position.getGoals())))
+                                                        String.format(
+                                                            "%s%d",
+                                                            position.getGoals() > 0 ? "+" : "",
+                                                            position.getGoals()))))
                                 .collectList()
                                 .map(
                                     positionDtos ->
