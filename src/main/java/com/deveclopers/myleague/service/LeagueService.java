@@ -5,6 +5,7 @@ import com.deveclopers.myleague.document.Match;
 import com.deveclopers.myleague.document.Phase;
 import com.deveclopers.myleague.document.Position;
 import com.deveclopers.myleague.document.Positions;
+import com.deveclopers.myleague.document.ProgressStatus;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.PositionDto;
@@ -153,7 +154,9 @@ public class LeagueService {
                   .flatMap(
                       matches -> {
                         List<Position> positions = new ArrayList<>();
-                        matches.forEach(match -> assignPositions(match, positions));
+                        matches.stream()
+                            .filter(match -> !match.getStatus().equals(ProgressStatus.SCHEDULED))
+                            .forEach(match -> assignPositions(match, positions));
 
                         return getTeamsById(league.getLeagueId())
                             .filter(isTeamMissingInPositions(positions))
