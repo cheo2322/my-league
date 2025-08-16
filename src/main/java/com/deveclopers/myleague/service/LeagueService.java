@@ -122,6 +122,10 @@ public class LeagueService {
                                                 team ->
                                                     new PositionDto(
                                                         team.getName(),
+                                                        position.getPositionStatus() != null
+                                                            ? position.getPositionStatus().name()
+                                                            : "", // TODO: Fix it! Shouldn't be null
+                                                                  // position status
                                                         position.getPlayedGames(),
                                                         position.getPoints(),
                                                         position.getFavorGoals(),

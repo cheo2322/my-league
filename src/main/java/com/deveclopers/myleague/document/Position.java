@@ -12,11 +12,18 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 public class Position {
   private ObjectId teamId;
+  private PositionStatus positionStatus;
   private int playedGames;
   private int points;
   private int favorGoals;
   private int againstGoals;
   private int goals;
+
+  public enum PositionStatus {
+    KEEP,
+    UP,
+    DOWN
+  }
 
   public Position(String teamId) {
     this.teamId = new ObjectId(teamId);
