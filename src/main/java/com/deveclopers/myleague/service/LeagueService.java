@@ -20,7 +20,6 @@ import com.deveclopers.myleague.repository.TeamRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
@@ -156,7 +155,7 @@ public class LeagueService {
                   .getFromLeagueAndPhase(league, phase)
                   .flatMap(roundDto -> roundService.getMatchesByRound(roundDto.roundId()))
                   .collectList()
-                  .flatMap(mapMatches(roundId, league, phase));
+                  .flatMap(matches -> mapMatches(roundId, matches, league, phase));
             });
   }
 
@@ -180,21 +179,17 @@ public class LeagueService {
                                 .flatMapMany(Flux::fromIterable)));
   }
 
-  private Function<List<Match>, Mono<? extends Void>> mapMatches(
-      String roundId, League league, Phase phase) {
+  private Mono<Void> mapMatches(String roundId, List<Match> matches, League league, Phase phase) {
+    List<Position> positions = new ArrayList<>();
+    matches.stream()
+        .filter(match -> !match.getStatus().equals(ProgressStatus.SCHEDULED))
+        .forEach(match -> assignPositions(match, positions));
 
-    return matches -> {
-      List<Position> positions = new ArrayList<>();
-      matches.stream()
-          .filter(match -> !match.getStatus().equals(ProgressStatus.SCHEDULED))
-          .forEach(match -> assignPositions(match, positions));
-
-      return getTeamsById(league.getLeagueId())
-          .filter(isTeamMissingInPositions(positions))
-          .doOnNext(teamDto -> positions.add(new Position(teamDto.getId())))
-          .collectList()
-          .then(Mono.defer(() -> updateOrCreatePositions(positions, league, phase, roundId)));
-    };
+    return getTeamsById(league.getLeagueId())
+        .filter(isTeamMissingInPositions(positions))
+        .doOnNext(teamDto -> positions.add(new Position(teamDto.getId())))
+        .collectList()
+        .then(Mono.defer(() -> updateOrCreatePositions(positions, league, phase, roundId)));
   }
 
   private Mono<Void> updateOrCreatePositions(
