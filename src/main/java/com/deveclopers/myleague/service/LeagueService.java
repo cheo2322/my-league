@@ -6,7 +6,6 @@ import com.deveclopers.myleague.document.Phase;
 import com.deveclopers.myleague.document.Position;
 import com.deveclopers.myleague.document.Positions;
 import com.deveclopers.myleague.document.ProgressStatus;
-import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.PositionDto;
@@ -14,10 +13,7 @@ import com.deveclopers.myleague.dto.PositionsDto;
 import com.deveclopers.myleague.dto.RoundDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.mapper.LeagueMapper;
-import com.deveclopers.myleague.mapper.TeamMapper;
 import com.deveclopers.myleague.repository.LeagueRepository;
-import com.deveclopers.myleague.repository.PositionsRepository;
-import com.deveclopers.myleague.repository.TeamRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -32,61 +28,32 @@ import reactor.core.publisher.Mono;
 public class LeagueService {
 
   private final LeagueRepository leagueRepository;
-  private final TeamRepository teamRepository;
-  private final PositionsRepository positionsRepository;
 
   private final PhaseService phaseService;
   private final RoundService roundService;
+  private final TeamService teamService;
+  private final PositionsService positionsService;
 
   private final LeagueMapper LEAGUE_MAPPER = LeagueMapper.INSTANCE;
-  private final TeamMapper TEAM_MAPPER = TeamMapper.INSTANCE;
 
   public LeagueService(
       LeagueRepository leagueRepository,
-      TeamRepository teamRepository,
-      PositionsRepository positionsRepository,
       PhaseService phaseService,
-      RoundService roundService) {
+      RoundService roundService,
+      TeamService teamService,
+      PositionsService positionsService) {
+
     this.leagueRepository = leagueRepository;
-    this.teamRepository = teamRepository;
-    this.positionsRepository = positionsRepository;
     this.phaseService = phaseService;
     this.roundService = roundService;
+    this.teamService = teamService;
+    this.positionsService = positionsService;
   }
 
   public Mono<DefaultDto> createLeague(LeagueDto leagueDto) {
     return leagueRepository
         .save(LEAGUE_MAPPER.dtoToLeague(leagueDto))
         .map(LEAGUE_MAPPER::instanceToDefaultDto);
-  }
-
-  public Mono<TeamDto> addTeamToLeague(TeamDto teamDto, String leagueId) {
-    teamDto.setLeagueId(leagueId);
-
-    return leagueRepository
-        .findById(leagueId)
-        .flatMap(
-            leagueDB ->
-                teamRepository
-                    .save(TEAM_MAPPER.dtoToTeam(teamDto))
-                    .map(
-                        teamDB -> {
-                          ObjectId teamId = new ObjectId(teamDB.getId());
-                          if (leagueDB.getTeams() == null || leagueDB.getTeams().isEmpty()) {
-                            leagueDB.setTeams(List.of(teamId));
-                          } else {
-                            leagueDB.getTeams().add(teamId);
-                          }
-
-                          leagueRepository.save(leagueDB).subscribe();
-
-                          return TEAM_MAPPER.instanceToDto(teamDB);
-                        }))
-        .switchIfEmpty(Mono.error(new RuntimeException()));
-  }
-
-  public Flux<TeamDto> getTeamsById(String leagueId) {
-    return teamRepository.findByLeagueId(new ObjectId(leagueId)).map(TEAM_MAPPER::instanceToDto);
   }
 
   public Flux<LeagueDto> getLeagues() {
@@ -105,9 +72,8 @@ public class LeagueService {
   }
 
   public Mono<PositionsDto> getPositions(String leagueId, String phaseId, String roundId) {
-    return positionsRepository
-        .findByLeagueIdAndPhaseIdAndRoundId(
-            new ObjectId(leagueId), new ObjectId(phaseId), new ObjectId(roundId))
+    return positionsService
+        .getByLeagueIdAndPhaseIdAndRoundId(leagueId, phaseId, roundId)
         .flatMap(
             positions ->
                 roundService
@@ -117,8 +83,8 @@ public class LeagueService {
                             Flux.fromIterable(positions.getPositions())
                                 .concatMap(
                                     position ->
-                                        teamRepository
-                                            .findById(position.getTeamId().toHexString())
+                                        teamService
+                                            .getTeam(position.getTeamId().toHexString())
                                             .map(team -> buildPositionDto(position, team)))
                                 .collectList()
                                 .map(
@@ -165,7 +131,7 @@ public class LeagueService {
                                 .flatMapMany(Flux::fromIterable)));
   }
 
-  private static PositionDto buildPositionDto(Position position, Team team) {
+  private static PositionDto buildPositionDto(Position position, TeamDto team) {
     return new PositionDto(
         team.getName(),
         position.getPositionStatus() != null
@@ -184,15 +150,20 @@ public class LeagueService {
         .filter(match -> !match.getStatus().equals(ProgressStatus.SCHEDULED))
         .forEach(match -> assignPositions(match, positions));
 
-    return getTeamsById(league.getLeagueId())
+    return teamService
+        .getTeamsByLeagueId(league.getLeagueId())
         .filter(isTeamMissingInPositions(positions))
         .doOnNext(teamDto -> positions.add(new Position(teamDto.getId())))
         .collectList()
-        .then(Mono.defer(() -> updateOrCreatePositions(positions, league, phase, roundId)));
+        .then(
+            Mono.defer(
+                () ->
+                    updateOrCreatePositions(
+                        positions, league.getLeagueId(), phase.getPhaseId(), roundId)));
   }
 
   private Mono<Void> updateOrCreatePositions(
-      List<Position> positions, League league, Phase phase, String roundId) {
+      List<Position> positions, String leagueId, String phaseId, String roundId) {
 
     positions.sort(
         Comparator.comparing(Position::getPoints)
@@ -202,25 +173,23 @@ public class LeagueService {
             .thenComparing(Position::getAgainstGoals)
             .thenComparing(Position::getPlayedGames));
 
-    return positionsRepository
-        .findByLeagueIdAndPhaseIdAndRoundId(
-            new ObjectId(league.getLeagueId()),
-            new ObjectId(phase.getPhaseId()),
-            new ObjectId(roundId))
+    return positionsService
+        .getByLeagueIdAndPhaseIdAndRoundId(leagueId, phaseId, roundId)
         .flatMap(
-            existing -> {
-              existing.setPositions(positions);
-              return positionsRepository.save(existing);
+            positionsDB -> {
+              positionsDB.setPositions(positions);
+              return positionsService.saveOrUpdate(positionsDB);
             })
         .switchIfEmpty(
             Mono.defer(
                 () -> {
                   Positions positionsTable = new Positions();
-                  positionsTable.setLeagueId(new ObjectId(league.getLeagueId()));
-                  positionsTable.setPhaseId(new ObjectId(phase.getPhaseId()));
+                  positionsTable.setLeagueId(new ObjectId(leagueId));
+                  positionsTable.setPhaseId(new ObjectId(phaseId));
                   positionsTable.setRoundId(new ObjectId(roundId));
                   positionsTable.setPositions(positions);
-                  return positionsRepository.save(positionsTable);
+
+                  return positionsService.saveOrUpdate(positionsTable);
                 }))
         .then();
   }
@@ -251,15 +220,13 @@ public class LeagueService {
         pointsToAddToVisitTeam,
         visitGoals,
         homeGoals);
-
-    positions.sort(
-        Comparator.comparing(Position::getPoints)
-            .reversed()
-            .thenComparing(Position::getGoals, Comparator.reverseOrder()));
   }
 
   private static Position findPosition(List<Position> positions, ObjectId teamId) {
-    return positions.stream().filter(p -> p.getTeamId().equals(teamId)).findFirst().orElse(null);
+    return positions.stream()
+        .filter(position -> position.getTeamId().equals(teamId))
+        .findFirst()
+        .orElse(null);
   }
 
   private static void assignPoints(
@@ -270,6 +237,7 @@ public class LeagueService {
       int pointsToAdd,
       int favorGoals,
       int againstGoals) {
+
     if (teamPosition == null) {
       teamPosition = new Position(matchId);
       teamPosition.setTeamId(teamId);

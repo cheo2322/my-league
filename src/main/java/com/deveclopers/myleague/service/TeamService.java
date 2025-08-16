@@ -3,7 +3,9 @@ package com.deveclopers.myleague.service;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.mapper.TeamMapper;
 import com.deveclopers.myleague.repository.TeamRepository;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -22,5 +24,9 @@ public class TeamService {
         .findById(id)
         .map(TEAM_MAPPER::instanceToDto)
         .switchIfEmpty(Mono.error(new RuntimeException()));
+  }
+
+  public Flux<TeamDto> getTeamsByLeagueId(String leagueId) {
+    return teamRepository.findByLeagueId(new ObjectId(leagueId)).map(TEAM_MAPPER::instanceToDto);
   }
 }

@@ -5,7 +5,6 @@ import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.PhaseDto;
 import com.deveclopers.myleague.dto.PositionsDto;
 import com.deveclopers.myleague.dto.RoundDto;
-import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.LeagueService;
 import com.deveclopers.myleague.service.PhaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,18 +38,6 @@ public class LeagueController {
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<DefaultDto> postLeague(@RequestBody LeagueDto leagueDto) {
     return leagueService.createLeague(leagueDto);
-  }
-
-  @PostMapping("/{id}/team")
-  @ResponseStatus(HttpStatus.CREATED)
-  public Mono<TeamDto> addTeam(@PathVariable("id") String leagueId, @RequestBody TeamDto teamDto) {
-    return leagueService.addTeamToLeague(teamDto, leagueId);
-  }
-
-  @GetMapping("/{id}/teams")
-  @ResponseStatus(HttpStatus.OK)
-  public Flux<TeamDto> getTeams(@PathVariable("id") String leagueId) {
-    return leagueService.getTeamsById(leagueId);
   }
 
   @GetMapping

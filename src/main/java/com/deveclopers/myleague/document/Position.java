@@ -27,6 +27,7 @@ public class Position {
 
   public Position(String teamId) {
     this.teamId = new ObjectId(teamId);
+    positionStatus = PositionStatus.KEEP;
     playedGames = 0;
     points = 0;
     favorGoals = 0;
