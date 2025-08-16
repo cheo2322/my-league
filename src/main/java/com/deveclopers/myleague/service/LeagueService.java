@@ -130,19 +130,6 @@ public class LeagueService {
         .switchIfEmpty(Mono.empty());
   }
 
-  private static PositionDto buildPositionDto(Position position, Team team) {
-    return new PositionDto(
-        team.getName(),
-        position.getPositionStatus() != null
-            ? position.getPositionStatus().name()
-            : "", // TODO: Fix it! Shouldn't be null position status
-        position.getPlayedGames(),
-        position.getPoints(),
-        position.getFavorGoals(),
-        position.getAgainstGoals(),
-        String.format("%s%d", position.getGoals() > 0 ? "+" : "", position.getGoals()));
-  }
-
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
     return Mono.zip(leagueRepository.findById(leagueId), phaseService.getPhase(phaseId))
         .flatMap(
@@ -176,6 +163,19 @@ public class LeagueService {
                                             .sorted(Comparator.comparing(RoundDto::order))
                                             .collect(Collectors.toList()))
                                 .flatMapMany(Flux::fromIterable)));
+  }
+
+  private static PositionDto buildPositionDto(Position position, Team team) {
+    return new PositionDto(
+        team.getName(),
+        position.getPositionStatus() != null
+            ? position.getPositionStatus().name()
+            : "", // TODO: Fix it! Shouldn't be null position status
+        position.getPlayedGames(),
+        position.getPoints(),
+        position.getFavorGoals(),
+        position.getAgainstGoals(),
+        String.format("%s%d", position.getGoals() > 0 ? "+" : "", position.getGoals()));
   }
 
   private Mono<Void> mapMatches(String roundId, List<Match> matches, League league, Phase phase) {
