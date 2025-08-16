@@ -20,6 +20,7 @@ import com.deveclopers.myleague.repository.TeamRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
@@ -155,53 +156,7 @@ public class LeagueService {
                   .getFromLeagueAndPhase(league, phase)
                   .flatMap(roundDto -> roundService.getMatchesByRound(roundDto.roundId()))
                   .collectList()
-                  .flatMap(
-                      matches -> {
-                        List<Position> positions = new ArrayList<>();
-                        matches.stream()
-                            .filter(match -> !match.getStatus().equals(ProgressStatus.SCHEDULED))
-                            .forEach(match -> assignPositions(match, positions));
-
-                        return getTeamsById(league.getLeagueId())
-                            .filter(isTeamMissingInPositions(positions))
-                            .doOnNext(teamDto -> positions.add(new Position(teamDto.getId())))
-                            .collectList()
-                            .flatMap(
-                                ignored -> {
-                                  positions.sort(
-                                      Comparator.comparing(Position::getPoints)
-                                          .reversed()
-                                          .thenComparing(
-                                              Position::getGoals, Comparator.reverseOrder())
-                                          .thenComparing(
-                                              Position::getFavorGoals, Comparator.reverseOrder())
-                                          .thenComparing(Position::getAgainstGoals)
-                                          .thenComparing(Position::getPlayedGames));
-
-                                  return positionsRepository
-                                      .findByLeagueIdAndPhaseIdAndRoundId(
-                                          new ObjectId(league.getLeagueId()),
-                                          new ObjectId(phase.getPhaseId()),
-                                          new ObjectId(roundId))
-                                      .flatMap(
-                                          existing -> {
-                                            existing.setPositions(positions);
-                                            return positionsRepository.save(existing);
-                                          })
-                                      .switchIfEmpty(
-                                          Mono.defer(
-                                              () -> {
-                                                Positions positionsTable = new Positions();
-                                                positionsTable.setLeagueId(new ObjectId(leagueId));
-                                                positionsTable.setPhaseId(new ObjectId(phaseId));
-                                                positionsTable.setRoundId(new ObjectId(roundId));
-                                                positionsTable.setPositions(positions);
-
-                                                return positionsRepository.save(positionsTable);
-                                              }))
-                                      .then();
-                                });
-                      });
+                  .flatMap(mapMatches(roundId, league, phase));
             });
   }
 
@@ -223,6 +178,57 @@ public class LeagueService {
                                             .sorted(Comparator.comparing(RoundDto::order))
                                             .collect(Collectors.toList()))
                                 .flatMapMany(Flux::fromIterable)));
+  }
+
+  private Function<List<Match>, Mono<? extends Void>> mapMatches(
+      String roundId, League league, Phase phase) {
+
+    return matches -> {
+      List<Position> positions = new ArrayList<>();
+      matches.stream()
+          .filter(match -> !match.getStatus().equals(ProgressStatus.SCHEDULED))
+          .forEach(match -> assignPositions(match, positions));
+
+      return getTeamsById(league.getLeagueId())
+          .filter(isTeamMissingInPositions(positions))
+          .doOnNext(teamDto -> positions.add(new Position(teamDto.getId())))
+          .collectList()
+          .then(Mono.defer(() -> updateOrCreatePositions(positions, league, phase, roundId)));
+    };
+  }
+
+  private Mono<Void> updateOrCreatePositions(
+      List<Position> positions, League league, Phase phase, String roundId) {
+
+    positions.sort(
+        Comparator.comparing(Position::getPoints)
+            .reversed()
+            .thenComparing(Position::getGoals, Comparator.reverseOrder())
+            .thenComparing(Position::getFavorGoals, Comparator.reverseOrder())
+            .thenComparing(Position::getAgainstGoals)
+            .thenComparing(Position::getPlayedGames));
+
+    return positionsRepository
+        .findByLeagueIdAndPhaseIdAndRoundId(
+            new ObjectId(league.getLeagueId()),
+            new ObjectId(phase.getPhaseId()),
+            new ObjectId(roundId))
+        .flatMap(
+            existing -> {
+              existing.setPositions(positions);
+              return positionsRepository.save(existing);
+            })
+        .switchIfEmpty(
+            Mono.defer(
+                () -> {
+                  Positions positionsTable = new Positions();
+                  positionsTable.setLeagueId(new ObjectId(league.getLeagueId()));
+                  positionsTable.setPhaseId(new ObjectId(phase.getPhaseId()));
+                  positionsTable.setRoundId(new ObjectId(roundId));
+                  positionsTable.setPositions(positions);
+                  return positionsRepository.save(positionsTable);
+                }))
+        .then();
   }
 
   private void assignPositions(Match match, List<Position> positions) {
