@@ -6,6 +6,7 @@ import com.deveclopers.myleague.document.Phase;
 import com.deveclopers.myleague.document.Position;
 import com.deveclopers.myleague.document.Positions;
 import com.deveclopers.myleague.document.ProgressStatus;
+import com.deveclopers.myleague.document.Team;
 import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.LeagueDto;
 import com.deveclopers.myleague.dto.PositionDto;
@@ -118,22 +119,7 @@ public class LeagueService {
                                     position ->
                                         teamRepository
                                             .findById(position.getTeamId().toHexString())
-                                            .map(
-                                                team ->
-                                                    new PositionDto(
-                                                        team.getName(),
-                                                        position.getPositionStatus() != null
-                                                            ? position.getPositionStatus().name()
-                                                            : "", // TODO: Fix it! Shouldn't be null
-                                                                  // position status
-                                                        position.getPlayedGames(),
-                                                        position.getPoints(),
-                                                        position.getFavorGoals(),
-                                                        position.getAgainstGoals(),
-                                                        String.format(
-                                                            "%s%d",
-                                                            position.getGoals() > 0 ? "+" : "",
-                                                            position.getGoals()))))
+                                            .map(team -> buildPositionDto(position, team)))
                                 .collectList()
                                 .map(
                                     positionDtos ->
@@ -142,6 +128,19 @@ public class LeagueService {
                                             round.getOrder(),
                                             positionDtos))))
         .switchIfEmpty(Mono.empty());
+  }
+
+  private static PositionDto buildPositionDto(Position position, Team team) {
+    return new PositionDto(
+        team.getName(),
+        position.getPositionStatus() != null
+            ? position.getPositionStatus().name()
+            : "", // TODO: Fix it! Shouldn't be null position status
+        position.getPlayedGames(),
+        position.getPoints(),
+        position.getFavorGoals(),
+        position.getAgainstGoals(),
+        String.format("%s%d", position.getGoals() > 0 ? "+" : "", position.getGoals()));
   }
 
   public Mono<Void> generatePositions(String leagueId, String phaseId, String roundId) {
