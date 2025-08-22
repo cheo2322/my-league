@@ -13,10 +13,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 public class User {
 
-  @Id private Long id;
+  @Id private String id;
 
   @Indexed(unique = true)
   private String username;
 
-  private String password;
+  private String email;
+  private String passwordHash;
+  private Role globalRole;
+
+  public enum Role {
+    ADMIN_MASTER,
+    USER
+  }
 }
