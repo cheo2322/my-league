@@ -4,7 +4,10 @@ import com.deveclopers.myleague.document.Phase;
 import com.deveclopers.myleague.document.Round;
 import com.deveclopers.myleague.dto.MatchDto;
 import com.deveclopers.myleague.dto.RoundDto;
+import com.deveclopers.myleague.dto.favourite.FavouriteDto;
+import com.deveclopers.myleague.dto.favourite.FavouriteLeague;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,20 +18,57 @@ public class MainService {
   private final RoundService roundService;
   private final PhaseService phaseService;
   private final LeagueService leagueService;
+  private final UserService userService;
 
   public MainService(
-      RoundService roundService, PhaseService phaseService, LeagueService leagueService) {
+      RoundService roundService,
+      PhaseService phaseService,
+      LeagueService leagueService,
+      UserService userService) {
     this.roundService = roundService;
     this.phaseService = phaseService;
     this.leagueService = leagueService;
+    this.userService = userService;
   }
 
+  @Deprecated
   public Flux<RoundDto> getMainPage() {
     return leagueService
         .getLeagues()
         .flatMap(
             leagueDto ->
                 roundService.getRound(leagueDto.activeRoundId()).flatMapMany(this::buildRoundDto));
+  }
+
+  public Mono<FavouriteDto> getFavourites(String userId) {
+    return userService
+        .getUser(userId)
+        .flatMap(
+            user ->
+                Flux.fromIterable(user.getFavouriteLeagues())
+                    .flatMap(this::buildFavouriteLeague)
+                    .collectList()
+                    .map(
+                        favouriteLeagues -> new FavouriteDto(userId, favouriteLeagues, List.of())));
+  }
+
+  private Mono<FavouriteLeague> buildFavouriteLeague(ObjectId leagueId) {
+    return leagueService
+        .getLeagueById(leagueId.toHexString())
+        .flatMap(
+            league ->
+                roundService
+                    .getRound(league.getActiveRoundId().toHexString())
+                    .flatMap(
+                        round ->
+                            buildRoundDto(round)
+                                .map(
+                                    roundDto ->
+                                        new FavouriteLeague(
+                                            league.getLeagueId(),
+                                            league.getName(),
+                                            league.getHasStarted(),
+                                            roundDto))));
   }
 
   private Mono<RoundDto> buildRoundDto(Round round) {

@@ -59,4 +59,8 @@ public class UserService {
               return Mono.just(token);
             });
   }
+
+  protected Mono<User> getUser(String userId) {
+    return userRepository.findById(userId);
+  }
 }
