@@ -1,3 +1,3 @@
 package com.deveclopers.myleague.dto;
 
-public record UserDto(String name, String email, String password) {}
+public record UserDto(String username, String email, String password) {}

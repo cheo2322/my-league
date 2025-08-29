@@ -15,10 +15,13 @@ public class User {
 
   @Id private String id;
 
-  @Indexed(unique = true)
+  // TODO: Add in v2
+  //  @Indexed(unique = true)
   private String username;
 
+  @Indexed(unique = true)
   private String email;
+
   private String passwordHash;
   private Role globalRole;
 

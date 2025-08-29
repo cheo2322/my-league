@@ -32,7 +32,7 @@ public class UserService {
             userRepository.save(
                 new User(
                     null,
-                    userDto.name(),
+                    userDto.username(),
                     userDto.email(),
                     encoder.encode(userDto.password()),
                     Role.USER)));
