@@ -15,5 +15,7 @@ public interface UserMapper {
   @Mapping(target = "username", ignore = true) // TODO: Add in v2
   @Mapping(target = "globalRole", ignore = true)
   @Mapping(target = "creationDate", ignore = true)
+  @Mapping(target = "favouriteLeagues", ignore = true)
+  @Mapping(target = "favouriteTeams", ignore = true)
   User dtoToInstance(UserDto userDto);
 }
