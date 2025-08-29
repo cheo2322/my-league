@@ -1,6 +1,6 @@
 package com.deveclopers.myleague.document;
 
-import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 @Getter
 @Setter
-@AllArgsConstructor
 public class User {
 
   @Id private String id;
@@ -23,7 +22,8 @@ public class User {
   private String email;
 
   private String passwordHash;
-  private Role globalRole;
+  private Role globalRole = Role.USER;
+  private LocalDateTime creationDate = LocalDateTime.now();
 
   public enum Role {
     ADMIN_MASTER,

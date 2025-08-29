@@ -1,9 +1,9 @@
 package com.deveclopers.myleague.service;
 
 import com.deveclopers.myleague.document.User;
-import com.deveclopers.myleague.document.User.Role;
 import com.deveclopers.myleague.dto.LoginDto;
 import com.deveclopers.myleague.dto.UserDto;
+import com.deveclopers.myleague.mapper.UserMapper;
 import com.deveclopers.myleague.repository.UserRepository;
 import com.deveclopers.myleague.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,13 +29,12 @@ public class UserService {
         .findByEmail(userDto.email())
         .flatMap(existing -> Mono.<User>error(new RuntimeException("Already registered email.")))
         .switchIfEmpty(
-            userRepository.save(
-                new User(
-                    null,
-                    userDto.username(),
-                    userDto.email(),
-                    encoder.encode(userDto.password()),
-                    Role.USER)));
+            Mono.defer(
+                () -> {
+                  User user = UserMapper.INSTANCE.dtoToInstance(userDto);
+                  user.setPasswordHash(encoder.encode(userDto.password()));
+                  return userRepository.save(user);
+                }));
   }
 
   public Mono<String> login(LoginDto dto) {
