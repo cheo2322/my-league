@@ -1,6 +1,7 @@
 package com.deveclopers.myleague.controller;
 
 import com.deveclopers.myleague.dto.LoginDto;
+import com.deveclopers.myleague.dto.LoginDtoReturn;
 import com.deveclopers.myleague.dto.UserDto;
 import com.deveclopers.myleague.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -22,12 +23,8 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public Mono<ResponseEntity<String>> register(@RequestBody UserDto userDto) {
-    return userService
-        .registerUser(userDto)
-        .map(user -> ResponseEntity.ok("User registered."))
-        .onErrorResume(
-            e -> Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage())));
+  public Mono<ResponseEntity<LoginDtoReturn>> register(@RequestBody UserDto userDto) {
+    return userService.registerUser(userDto).map(ResponseEntity::ok);
   }
 
   @PostMapping("/login")

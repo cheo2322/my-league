@@ -2,6 +2,7 @@ package com.deveclopers.myleague.service;
 
 import com.deveclopers.myleague.document.User;
 import com.deveclopers.myleague.dto.LoginDto;
+import com.deveclopers.myleague.dto.LoginDtoReturn;
 import com.deveclopers.myleague.dto.UserDto;
 import com.deveclopers.myleague.mapper.UserMapper;
 import com.deveclopers.myleague.repository.UserRepository;
@@ -24,16 +25,23 @@ public class UserService {
     this.jwtService = jwtService;
   }
 
-  public Mono<User> registerUser(UserDto userDto) {
+  public Mono<LoginDtoReturn> registerUser(UserDto userDto) {
     return userRepository
         .findByEmail(userDto.email())
-        .flatMap(existing -> Mono.<User>error(new RuntimeException("Already registered email.")))
+        .flatMap(
+            ignored ->
+                Mono.<LoginDtoReturn>error(new RuntimeException("Already registered email.")))
         .switchIfEmpty(
             Mono.defer(
                 () -> {
                   User user = UserMapper.INSTANCE.dtoToInstance(userDto);
                   user.setPasswordHash(encoder.encode(userDto.password()));
-                  return userRepository.save(user);
+                  return userRepository
+                      .save(user)
+                      .map(
+                          userDB ->
+                              new LoginDtoReturn(
+                                  userDB.getEmail(), jwtService.generateToken(userDB)));
                 }));
   }
 
