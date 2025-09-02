@@ -18,10 +18,10 @@ public class Match {
   /** Reference {@link Round} */
   private ObjectId roundId;
 
-  /** Reference: {@link :Team} */
+  /** Reference: {@link Team} */
   private ObjectId homeTeam;
 
-  /** Reference: {@link :Team} */
+  /** Reference: {@link Team} */
   private ObjectId visitTeam;
 
   private Integer homeResult;
