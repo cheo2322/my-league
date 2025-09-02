@@ -29,4 +29,6 @@ public class League {
   private Boolean hasFinished;
   private ObjectId activePhaseId;
   private ObjectId activeRoundId;
+  private ObjectId userOwner;
+  private List<ObjectId> editors;
 }

@@ -68,7 +68,9 @@ public class LeagueService {
   }
 
   public Mono<League> getLeagueById(String id) {
-    return leagueRepository.findById(id);
+    return leagueRepository
+        .findById(id)
+        .switchIfEmpty(Mono.error(new RuntimeException("Not Found League")));
   }
 
   public Mono<PositionsDto> getPositions(String leagueId, String phaseId, String roundId) {

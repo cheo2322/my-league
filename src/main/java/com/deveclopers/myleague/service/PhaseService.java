@@ -25,6 +25,8 @@ public class PhaseService {
   }
 
   public Mono<Phase> getPhase(String phaseId) {
-    return phaseRepository.findById(phaseId);
+    return phaseRepository
+        .findById(phaseId)
+        .switchIfEmpty(Mono.error(new RuntimeException("Not Found Phase")));
   }
 }

@@ -47,7 +47,9 @@ public class RoundService {
   }
 
   public Mono<Round> getRound(String id) {
-    return roundRepository.findById(id);
+    return roundRepository
+        .findById(id)
+        .switchIfEmpty(Mono.error(new RuntimeException("Not Found Round")));
   }
 
   public Flux<Match> getMatchesByRound(String roundId) {
