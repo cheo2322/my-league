@@ -3,8 +3,10 @@ package com.deveclopers.myleague.service;
 import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.document.Match;
 import com.deveclopers.myleague.dto.MatchDetailsDto;
+import com.deveclopers.myleague.repository.FieldRepository;
 import com.deveclopers.myleague.repository.MatchRepository;
 import com.deveclopers.myleague.security.AuthenticatedUserContext;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -14,6 +16,7 @@ import reactor.util.function.Tuples;
 public class MatchService {
 
   private final MatchRepository matchRepository;
+  private final FieldRepository fieldRepository;
 
   private final RoundService roundService;
   private final PhaseService phaseService;
@@ -23,11 +26,13 @@ public class MatchService {
 
   public MatchService(
       MatchRepository matchRepository,
+      FieldRepository fieldRepository,
       RoundService roundService,
       PhaseService phaseService,
       LeagueService leagueService,
       AuthenticatedUserContext userContext) {
     this.matchRepository = matchRepository;
+    this.fieldRepository = fieldRepository;
     this.phaseService = phaseService;
     this.leagueService = leagueService;
     this.roundService = roundService;
@@ -50,9 +55,16 @@ public class MatchService {
         .flatMap(
             matchAndLeague ->
                 validateOwnership(matchAndLeague.getT2().getUserOwner().toHexString())
-                    .map(
-                        isOwner ->
-                            new MatchDetailsDto(matchAndLeague.getT1().getMatchId(), isOwner)));
+                    .flatMap(
+                        isOwner -> {
+                          ObjectId fieldId = matchAndLeague.getT1().getField();
+
+                          return fieldId == null
+                              ? Mono.just(new MatchDetailsDto(null, isOwner))
+                              : fieldRepository
+                                  .findById(fieldId.toHexString())
+                                  .map(field -> new MatchDetailsDto(field.getName(), isOwner));
+                        }));
   }
 
   /**

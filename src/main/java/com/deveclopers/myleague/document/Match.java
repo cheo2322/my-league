@@ -24,6 +24,9 @@ public class Match {
   /** Reference: {@link Team} */
   private ObjectId visitTeam;
 
+  /** Reference: {@link Field} */
+  private ObjectId field;
+
   private Integer homeResult;
   private Integer visitResult;
   private Boolean hasExtraTime = false; // TODO: Add result
