@@ -32,10 +32,11 @@ public class MatchController {
   public Mono<ResponseEntity<String>> updateMatchResult(
       @PathVariable("id") String matchId,
       @RequestParam int homeResult,
-      @RequestParam int visitResult) {
+      @RequestParam int visitResult,
+      @RequestParam boolean isFinished) {
 
     return matchService
-        .updateMatchResult(matchId, homeResult, visitResult)
+        .updateMatchResult(matchId, homeResult, visitResult, isFinished)
         .thenReturn(ResponseEntity.ok("OK"))
         .onErrorResume(
             e ->

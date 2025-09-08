@@ -2,6 +2,7 @@ package com.deveclopers.myleague.service;
 
 import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.document.Match;
+import com.deveclopers.myleague.document.ProgressStatus;
 import com.deveclopers.myleague.dto.MatchDetailsDto;
 import com.deveclopers.myleague.repository.FieldRepository;
 import com.deveclopers.myleague.repository.MatchRepository;
@@ -39,7 +40,8 @@ public class MatchService {
     this.userContext = userContext;
   }
 
-  public Mono<Void> updateMatchResult(String matchId, int homeResult, int visitResult) {
+  public Mono<Void> updateMatchResult(
+      String matchId, int homeResult, int visitResult, boolean isFinished) {
     return resolveMatchAndLeague(matchId)
         .flatMap(
             matchAndLeague ->
@@ -47,7 +49,8 @@ public class MatchService {
                     matchAndLeague.getT1(),
                     matchAndLeague.getT2().getUserOwner().toHexString(),
                     homeResult,
-                    visitResult));
+                    visitResult,
+                    isFinished));
   }
 
   public Mono<MatchDetailsDto> getMatchDetails(String id) {
@@ -94,9 +97,11 @@ public class MatchService {
    * @param owner the ownerId to validate the ownership.
    * @param homeResult the updated home result.
    * @param visitResult the updated visit result.
+   * @param isFinished has the match already finished.
    * @return Void.
    */
-  private Mono<Void> mapUserAndUpdate(Match match, String owner, int homeResult, int visitResult) {
+  private Mono<Void> mapUserAndUpdate(
+      Match match, String owner, int homeResult, int visitResult, boolean isFinished) {
     return validateOwnership(owner)
         .filter(Boolean::booleanValue)
         .switchIfEmpty(Mono.error(new RuntimeException("Unauthorized: Not the owner")))
@@ -104,6 +109,8 @@ public class MatchService {
             ignored -> {
               match.setHomeResult(homeResult);
               match.setVisitResult(visitResult);
+              match.setStatus(isFinished ? ProgressStatus.FINISHED : ProgressStatus.IN_PROGRESS);
+
               return matchRepository.save(match).then();
             });
   }
