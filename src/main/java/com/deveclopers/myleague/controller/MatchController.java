@@ -44,7 +44,7 @@ public class MatchController {
                         .body("PATCH error: " + e.getMessage())));
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/{id}/details")
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<MatchDetailsDto>> getMatchDetails(@PathVariable("id") String matchId) {
     return matchService.getMatchDetails(matchId).map(ResponseEntity::ok);
