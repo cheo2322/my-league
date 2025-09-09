@@ -14,6 +14,7 @@ import com.deveclopers.myleague.dto.RoundDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.mapper.LeagueMapper;
 import com.deveclopers.myleague.repository.LeagueRepository;
+import com.deveclopers.myleague.security.AuthenticatedUserContext;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +35,8 @@ public class LeagueService {
   private final TeamService teamService;
   private final PositionsService positionsService;
 
+  private final AuthenticatedUserContext userContext;
+
   private final LeagueMapper LEAGUE_MAPPER = LeagueMapper.INSTANCE;
 
   public LeagueService(
@@ -41,13 +44,15 @@ public class LeagueService {
       PhaseService phaseService,
       RoundService roundService,
       TeamService teamService,
-      PositionsService positionsService) {
+      PositionsService positionsService,
+      AuthenticatedUserContext userContext) {
 
     this.leagueRepository = leagueRepository;
     this.phaseService = phaseService;
     this.roundService = roundService;
     this.teamService = teamService;
     this.positionsService = positionsService;
+    this.userContext = userContext;
   }
 
   public Mono<DefaultDto> createLeague(LeagueDto leagueDto) {
@@ -57,7 +62,13 @@ public class LeagueService {
   }
 
   public Flux<LeagueDto> getLeagues() {
-    return leagueRepository.findAll().map(LEAGUE_MAPPER::instanceToDto);
+    return userContext
+        .getUserId()
+        .flatMapMany(
+            userId ->
+                leagueRepository
+                    .findByUserOwner(new ObjectId(userId))
+                    .map(LEAGUE_MAPPER::instanceToDto));
   }
 
   public Mono<LeagueDto> getLeague(String id) {
