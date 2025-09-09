@@ -57,7 +57,8 @@ public class MatchService {
     return resolveMatchAndLeague(id)
         .flatMap(
             matchAndLeague ->
-                validateOwnership(matchAndLeague.getT2().getUserOwner().toHexString())
+                userContext
+                    .validateOwnership(matchAndLeague.getT2().getUserOwner().toHexString())
                     .flatMap(
                         isOwner -> {
                           ObjectId fieldId = matchAndLeague.getT1().getField();
@@ -102,7 +103,8 @@ public class MatchService {
    */
   private Mono<Void> mapUserAndUpdate(
       Match match, String owner, int homeResult, int visitResult, boolean isFinished) {
-    return validateOwnership(owner)
+    return userContext
+        .validateOwnership(owner)
         .filter(Boolean::booleanValue)
         .switchIfEmpty(Mono.error(new RuntimeException("Unauthorized: Not the owner")))
         .flatMap(
@@ -113,15 +115,5 @@ public class MatchService {
 
               return matchRepository.save(match).then();
             });
-  }
-
-  /**
-   * Validates if the League's owner matches with the user context.
-   *
-   * @param ownerId to validate.
-   * @return True if the owner matches, False otherwise.
-   */
-  private Mono<Boolean> validateOwnership(String ownerId) {
-    return userContext.getUserId().map(userId -> userId.equals(ownerId));
   }
 }

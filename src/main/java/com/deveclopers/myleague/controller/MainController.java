@@ -21,11 +21,9 @@ import reactor.core.publisher.Mono;
 public class MainController {
 
   private final MainService mainService;
-  private final AuthenticatedUserContext userContext;
 
-  public MainController(MainService mainService, AuthenticatedUserContext userContext) {
+  public MainController(MainService mainService) {
     this.mainService = mainService;
-    this.userContext = userContext;
   }
 
   @Deprecated
@@ -38,6 +36,6 @@ public class MainController {
   @GetMapping("/favourites")
   @ResponseStatus(HttpStatus.OK)
   public Mono<FavouriteDto> getFavourites() {
-    return userContext.getUserId().flatMap(mainService::getFavourites);
+    return mainService.getFavourites();
   }
 }

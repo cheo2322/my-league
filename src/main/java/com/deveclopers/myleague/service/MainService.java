@@ -6,6 +6,7 @@ import com.deveclopers.myleague.dto.MatchDto;
 import com.deveclopers.myleague.dto.RoundDto;
 import com.deveclopers.myleague.dto.favourite.FavouriteDto;
 import com.deveclopers.myleague.dto.favourite.FavouriteLeague;
+import com.deveclopers.myleague.security.AuthenticatedUserContext;
 import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
@@ -19,16 +20,19 @@ public class MainService {
   private final PhaseService phaseService;
   private final LeagueService leagueService;
   private final UserService userService;
+  private final AuthenticatedUserContext userContext;
 
   public MainService(
       RoundService roundService,
       PhaseService phaseService,
       LeagueService leagueService,
-      UserService userService) {
+      UserService userService,
+      AuthenticatedUserContext userContext) {
     this.roundService = roundService;
     this.phaseService = phaseService;
     this.leagueService = leagueService;
     this.userService = userService;
+    this.userContext = userContext;
   }
 
   @Deprecated
@@ -40,16 +44,21 @@ public class MainService {
                 roundService.getRound(leagueDto.activeRoundId()).flatMapMany(this::buildRoundDto));
   }
 
-  public Mono<FavouriteDto> getFavourites(String userId) {
-    return userService
-        .getUser(userId)
+  public Mono<FavouriteDto> getFavourites() {
+    return userContext
+        .getUserId()
         .flatMap(
-            user ->
-                Flux.fromIterable(user.getFavouriteLeagues())
-                    .flatMap(this::buildFavouriteLeague)
-                    .collectList()
-                    .map(
-                        favouriteLeagues -> new FavouriteDto(userId, favouriteLeagues, List.of())));
+            userId ->
+                userService
+                    .getUser(userId)
+                    .flatMap(
+                        user ->
+                            Flux.fromIterable(user.getFavouriteLeagues())
+                                .flatMap(this::buildFavouriteLeague)
+                                .collectList()
+                                .map(
+                                    favouriteLeagues ->
+                                        new FavouriteDto(userId, favouriteLeagues, List.of()))));
   }
 
   private Mono<FavouriteLeague> buildFavouriteLeague(ObjectId leagueId) {

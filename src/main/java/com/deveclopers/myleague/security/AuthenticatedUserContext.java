@@ -8,6 +8,21 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticatedUserContext {
 
+  /**
+   * Validates if the League's owner matches with the user context.
+   *
+   * @param ownerId to validate.
+   * @return True if the owner matches, False otherwise.
+   */
+  public Mono<Boolean> validateOwnership(String ownerId) {
+    return this.getUserId().map(userId -> userId.equals(ownerId));
+  }
+
+  /**
+   * Get the user ID from the context.
+   *
+   * @return The user ID.
+   */
   public Mono<String> getUserId() {
     return ReactiveSecurityContextHolder.getContext()
         .map(SecurityContext::getAuthentication)
