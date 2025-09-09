@@ -12,6 +12,7 @@ public class AuthenticatedUserContext {
     return ReactiveSecurityContextHolder.getContext()
         .map(SecurityContext::getAuthentication)
         .filter(auth -> auth != null && auth.getPrincipal() instanceof String)
-        .map(auth -> (String) auth.getPrincipal());
+        .map(auth -> (String) auth.getPrincipal())
+        .defaultIfEmpty("");
   }
 }

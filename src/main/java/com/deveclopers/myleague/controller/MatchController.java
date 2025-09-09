@@ -1,6 +1,6 @@
 package com.deveclopers.myleague.controller;
 
-import com.deveclopers.myleague.dto.MatchDto;
+import com.deveclopers.myleague.dto.MatchDetailsDto;
 import com.deveclopers.myleague.service.MatchService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,26 +27,27 @@ public class MatchController {
     this.matchService = matchService;
   }
 
-  @GetMapping("/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  public Mono<MatchDto> getMatch(@PathVariable("id") String matchId) {
-    return matchService.getMatch(matchId);
-  }
-
   @PatchMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<String>> updateMatchResult(
       @PathVariable("id") String matchId,
       @RequestParam int homeResult,
-      @RequestParam int visitResult) {
+      @RequestParam int visitResult,
+      @RequestParam boolean isFinished) {
 
     return matchService
-        .updateMatchResult(matchId, homeResult, visitResult)
+        .updateMatchResult(matchId, homeResult, visitResult, isFinished)
         .thenReturn(ResponseEntity.ok("OK"))
         .onErrorResume(
             e ->
                 Mono.just(
                     ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("PATCH error: " + e.getMessage())));
+  }
+
+  @GetMapping("/{id}/details")
+  @ResponseStatus(HttpStatus.OK)
+  public Mono<ResponseEntity<MatchDetailsDto>> getMatchDetails(@PathVariable("id") String matchId) {
+    return matchService.getMatchDetails(matchId).map(ResponseEntity::ok);
   }
 }

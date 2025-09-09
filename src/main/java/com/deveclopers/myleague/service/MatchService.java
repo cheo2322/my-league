@@ -1,24 +1,23 @@
 package com.deveclopers.myleague.service;
 
-import static com.deveclopers.myleague.constants.MyLeagueConstants.DATE_FORMATTER;
-import static com.deveclopers.myleague.constants.MyLeagueConstants.TIME_FORMATTER;
-
+import com.deveclopers.myleague.document.League;
 import com.deveclopers.myleague.document.Match;
-import com.deveclopers.myleague.document.Team;
-import com.deveclopers.myleague.dto.MatchDto;
+import com.deveclopers.myleague.document.ProgressStatus;
+import com.deveclopers.myleague.dto.MatchDetailsDto;
+import com.deveclopers.myleague.repository.FieldRepository;
 import com.deveclopers.myleague.repository.MatchRepository;
-import com.deveclopers.myleague.repository.TeamRepository;
 import com.deveclopers.myleague.security.AuthenticatedUserContext;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 @Service
 public class MatchService {
 
   private final MatchRepository matchRepository;
-  private final TeamRepository teamRepository;
+  private final FieldRepository fieldRepository;
 
   private final RoundService roundService;
   private final PhaseService phaseService;
@@ -28,24 +27,56 @@ public class MatchService {
 
   public MatchService(
       MatchRepository matchRepository,
-      TeamRepository teamRepository,
+      FieldRepository fieldRepository,
       RoundService roundService,
       PhaseService phaseService,
       LeagueService leagueService,
       AuthenticatedUserContext userContext) {
     this.matchRepository = matchRepository;
-    this.teamRepository = teamRepository;
+    this.fieldRepository = fieldRepository;
     this.phaseService = phaseService;
     this.leagueService = leagueService;
     this.roundService = roundService;
     this.userContext = userContext;
   }
 
-  public Mono<MatchDto> getMatch(String matchId) {
-    return matchRepository.findById(matchId).flatMap(this::mapMatch);
+  public Mono<Void> updateMatchResult(
+      String matchId, int homeResult, int visitResult, boolean isFinished) {
+    return resolveMatchAndLeague(matchId)
+        .flatMap(
+            matchAndLeague ->
+                mapUserAndUpdate(
+                    matchAndLeague.getT1(),
+                    matchAndLeague.getT2().getUserOwner().toHexString(),
+                    homeResult,
+                    visitResult,
+                    isFinished));
   }
 
-  public Mono<Void> updateMatchResult(String matchId, int homeResult, int visitResult) {
+  public Mono<MatchDetailsDto> getMatchDetails(String id) {
+    return resolveMatchAndLeague(id)
+        .flatMap(
+            matchAndLeague ->
+                validateOwnership(matchAndLeague.getT2().getUserOwner().toHexString())
+                    .flatMap(
+                        isOwner -> {
+                          ObjectId fieldId = matchAndLeague.getT1().getField();
+
+                          return fieldId == null
+                              ? Mono.just(new MatchDetailsDto(null, isOwner))
+                              : fieldRepository
+                                  .findById(fieldId.toHexString())
+                                  .map(field -> new MatchDetailsDto(field.getName(), isOwner));
+                        }));
+  }
+
+  /**
+   * Check the existence of league to extract the owner.
+   *
+   * @param matchId related to the league.
+   * @return a Tuple with Match and League in case they exist.
+   */
+  private Mono<Tuple2<Match, League>> resolveMatchAndLeague(String matchId) {
     return matchRepository
         .findById(matchId)
         .switchIfEmpty(Mono.error(new RuntimeException("Not Found Match")))
@@ -56,13 +87,7 @@ public class MatchService {
                     .flatMap(round -> phaseService.getPhase(round.getPhaseId().toHexString()))
                     .flatMap(
                         phase -> leagueService.getLeagueById(phase.getLeagueId().toHexString()))
-                    .flatMap(
-                        league ->
-                            mapUserAndUpdate(
-                                match,
-                                league.getUserOwner().toHexString(),
-                                homeResult,
-                                visitResult)));
+                    .map(league -> Tuples.of(match, league)));
   }
 
   /**
@@ -72,9 +97,11 @@ public class MatchService {
    * @param owner the ownerId to validate the ownership.
    * @param homeResult the updated home result.
    * @param visitResult the updated visit result.
+   * @param isFinished has the match already finished.
    * @return Void.
    */
-  private Mono<Void> mapUserAndUpdate(Match match, String owner, int homeResult, int visitResult) {
+  private Mono<Void> mapUserAndUpdate(
+      Match match, String owner, int homeResult, int visitResult, boolean isFinished) {
     return validateOwnership(owner)
         .filter(Boolean::booleanValue)
         .switchIfEmpty(Mono.error(new RuntimeException("Unauthorized: Not the owner")))
@@ -82,6 +109,8 @@ public class MatchService {
             ignored -> {
               match.setHomeResult(homeResult);
               match.setVisitResult(visitResult);
+              match.setStatus(isFinished ? ProgressStatus.FINISHED : ProgressStatus.IN_PROGRESS);
+
               return matchRepository.save(match).then();
             });
   }
@@ -94,29 +123,5 @@ public class MatchService {
    */
   private Mono<Boolean> validateOwnership(String ownerId) {
     return userContext.getUserId().map(userId -> userId.equals(ownerId));
-  }
-
-  private Mono<MatchDto> mapMatch(Match match) {
-    return Mono.zip(
-            teamRepository.findById(match.getHomeTeam().toHexString()),
-            teamRepository.findById(match.getVisitTeam().toHexString()))
-        .map(
-            tuple -> {
-              Team homeTeam = tuple.getT1();
-              Team visitTeam = tuple.getT2();
-
-              // TODO: Fix the zoned time
-              ZonedDateTime matchTime = match.getMatchTime().atZone(ZoneId.of("America/Guayaquil"));
-
-              return new MatchDto(
-                  match.getMatchId(),
-                  homeTeam.getName(),
-                  visitTeam.getName(),
-                  match.getHomeResult(),
-                  match.getVisitResult(),
-                  match.getStatus().name(),
-                  matchTime.format(DATE_FORMATTER),
-                  matchTime.format(TIME_FORMATTER));
-            });
   }
 }
