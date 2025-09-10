@@ -68,14 +68,18 @@ public class LeagueService {
             userId ->
                 leagueRepository
                     .findByUserOwner(new ObjectId(userId))
-                    .map(LEAGUE_MAPPER::instanceToDto));
+                    .flatMap(
+                        league ->
+                            userContext
+                                .validateOwnership(userId)
+                                .map(
+                                    isTheOwner ->
+                                        LEAGUE_MAPPER.instanceToDto(league, isTheOwner))));
   }
 
+  @Deprecated
   public Mono<LeagueDto> getLeague(String id) {
-    return leagueRepository
-        .findById(id)
-        .map(LEAGUE_MAPPER::instanceToDto)
-        .switchIfEmpty(Mono.error(new RuntimeException()));
+    return null;
   }
 
   public Mono<League> getLeagueById(String id) {

@@ -16,15 +16,23 @@ public interface LeagueMapper {
 
   @Mapping(source = "activePhaseId", target = "activePhaseId", qualifiedByName = "stringToObjectId")
   @Mapping(source = "activeRoundId", target = "activeRoundId", qualifiedByName = "stringToObjectId")
+  @Mapping(source = "isTheOwner", target = ".", ignore = true)
   League dtoToLeague(LeagueDto leagueDto);
 
   @Mapping(source = "leagueId", target = "id")
   DefaultDto instanceToDefaultDto(League league);
 
-  @Mapping(source = "leagueId", target = "id")
-  @Mapping(source = "activePhaseId", target = "activePhaseId", qualifiedByName = "objectIdToString")
-  @Mapping(source = "activeRoundId", target = "activeRoundId", qualifiedByName = "objectIdToString")
-  LeagueDto instanceToDto(League league);
+  @Mapping(source = "league.leagueId", target = "id")
+  @Mapping(
+      source = "league.activePhaseId",
+      target = "activePhaseId",
+      qualifiedByName = "objectIdToString")
+  @Mapping(
+      source = "league.activeRoundId",
+      target = "activeRoundId",
+      qualifiedByName = "objectIdToString")
+  @Mapping(source = "isTheOwner", target = "isTheOwner")
+  LeagueDto instanceToDto(League league, boolean isTheOwner);
 
   @Named("stringToObjectId")
   default ObjectId stringToObjectId(String id) {
