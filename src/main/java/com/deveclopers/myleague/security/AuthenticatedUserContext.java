@@ -11,7 +11,7 @@ public class AuthenticatedUserContext {
   /**
    * Validates if the League's owner matches with the user context.
    *
-   * @param ownerId to validate.
+   * @param ownerId from document to validate. Do not confuse with the current user ID.
    * @return True if the owner matches, False otherwise.
    */
   public Mono<Boolean> validateOwnership(String ownerId) {

@@ -46,7 +46,6 @@ public class LeagueController {
     return leagueService.getLeagues();
   }
 
-  @Deprecated
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
   public Mono<LeagueDto> getLeague(@PathVariable String id) {

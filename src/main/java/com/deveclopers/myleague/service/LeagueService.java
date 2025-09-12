@@ -68,18 +68,17 @@ public class LeagueService {
             userId ->
                 leagueRepository
                     .findByUserOwner(new ObjectId(userId))
-                    .flatMap(
-                        league ->
-                            userContext
-                                .validateOwnership(userId)
-                                .map(
-                                    isTheOwner ->
-                                        LEAGUE_MAPPER.instanceToDto(league, isTheOwner))));
+                    .flatMap(league -> mapLeague(league.getUserOwner().toHexString(), league)));
   }
 
-  @Deprecated
   public Mono<LeagueDto> getLeague(String id) {
-    return null;
+    return userContext
+        .getUserId()
+        .flatMap(
+            userId ->
+                leagueRepository
+                    .findById(id)
+                    .flatMap(league -> mapLeague(league.getUserOwner().toHexString(), league)));
   }
 
   public Mono<League> getLeagueById(String id) {
@@ -272,5 +271,11 @@ public class LeagueService {
     return teamDto ->
         positions.stream()
             .noneMatch(position -> position.getTeamId().toHexString().equals(teamDto.getId()));
+  }
+
+  private Mono<LeagueDto> mapLeague(String userId, League league) {
+    return userContext
+        .validateOwnership(userId)
+        .map(isTheOwner -> LEAGUE_MAPPER.instanceToDto(league, isTheOwner));
   }
 }
