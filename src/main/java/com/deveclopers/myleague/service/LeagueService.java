@@ -61,14 +61,14 @@ public class LeagueService {
         .map(LEAGUE_MAPPER::instanceToDefaultDto);
   }
 
-  public Flux<LeagueDto> getLeagues() {
+  public Flux<DefaultDto> getLeagues() {
     return userContext
         .getUserId()
         .flatMapMany(
             userId ->
                 leagueRepository
                     .findByUserOwner(new ObjectId(userId))
-                    .flatMap(league -> mapLeague(league.getUserOwner().toHexString(), league)));
+                    .map(LEAGUE_MAPPER::instanceToDefaultDto));
   }
 
   public Mono<LeagueDto> getLeague(String id) {

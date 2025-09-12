@@ -42,7 +42,7 @@ public class LeagueController {
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public Flux<LeagueDto> getLeagues() {
+  public Flux<DefaultDto> getLeagues() {
     return leagueService.getLeagues();
   }
 

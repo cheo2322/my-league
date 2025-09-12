@@ -67,6 +67,8 @@ public class SecurityConfig {
             .permitAll()
             .pathMatchers(HttpMethod.POST, SecurityConstants.AUTHENTICATED_POST)
             .authenticated()
+            .pathMatchers(HttpMethod.GET, SecurityConstants.AUTHENTICATED_GET)
+            .authenticated()
             .pathMatchers(SecurityConstants.ADMIN_PATHS)
             .hasRole(Role.ADMIN_MASTER.name())
             .anyExchange()

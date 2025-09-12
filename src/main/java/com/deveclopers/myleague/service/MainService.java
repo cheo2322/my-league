@@ -35,15 +35,6 @@ public class MainService {
     this.userContext = userContext;
   }
 
-  @Deprecated
-  public Flux<RoundDto> getMainPage() {
-    return leagueService
-        .getLeagues()
-        .flatMap(
-            leagueDto ->
-                roundService.getRound(leagueDto.activeRoundId()).flatMapMany(this::buildRoundDto));
-  }
-
   public Mono<FavouriteDto> getFavourites() {
     return userContext
         .getUserId()
