@@ -1,6 +1,7 @@
 package com.deveclopers.myleague.mapper;
 
 import com.deveclopers.myleague.document.Team;
+import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import org.bson.types.ObjectId;
 import org.mapstruct.Mapper;
@@ -18,6 +19,8 @@ public interface TeamMapper {
 
   @Mapping(source = "leagueId", target = "leagueId", qualifiedByName = "stringToObjectId")
   Team dtoToTeam(TeamDto teamDto);
+
+  DefaultDto instanceToDefaultDto(Team team);
 
   @Named("stringToObjectId")
   default ObjectId stringToObjectId(String id) {

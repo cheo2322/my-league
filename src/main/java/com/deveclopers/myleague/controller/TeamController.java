@@ -1,13 +1,17 @@
 package com.deveclopers.myleague.controller;
 
+import com.deveclopers.myleague.dto.DefaultDto;
 import com.deveclopers.myleague.dto.TeamDto;
 import com.deveclopers.myleague.service.TeamService;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -28,5 +32,13 @@ public class TeamController {
   @ResponseStatus(HttpStatus.OK)
   public Mono<TeamDto> getTeam(@PathVariable("id") String teamId) {
     return teamService.getTeam(teamId);
+  }
+
+  @GetMapping
+  @ResponseStatus(HttpStatus.OK)
+  public Mono<ResponseEntity<List<DefaultDto>>> getTeams(
+      @RequestParam("leagueId") String leagueId) {
+
+    return teamService.getTeamsFromLeague(leagueId).map(ResponseEntity::ok);
   }
 }

@@ -31,4 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-target/
+
+### Project Build Directory ###
+${project.build.directory}
